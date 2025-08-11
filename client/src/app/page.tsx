@@ -123,52 +123,54 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-baltazarPurple font-baltazar p-2 sm:p-6">
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 sm:p-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-8 sm:mb-12 text-center text-[#0057B7] tracking-wide">
-          Anketa osobnosti
-        </h1>
-  
-        <Stepper
-          initialStep={1}
-          onStepChange={setCurrentStep}
-          onFinalStepCompleted={handleFinalStepComplete}
-          backButtonText="Nazad"
-          nextButtonText="Dalje"
-          className="space-y-10 sm:space-y-14"
-          disableNext={!isStepValid(currentStep)}
-        >
-          <Step>
-            <StepName name={name} setName={setName} valid={validName} />
-          </Step>
-  
-          <Step>
-            <StepEmail email={email} setEmail={setEmail} valid={validEmail} />
-            <StepConsent consent={consent} setConsent={setConsent} valid={validConsent} />
-          </Step>
-  
-          <Step>
-            <StepPersonalityQuestions
-              q1={favoriteColor} setQ1={setFavoriteColor}
-              q2={socialSituation} setQ2={setSocialSituation}
-              q3={planFrequency} setQ3={setPlanFrequency}
-              q4={decisionStyle} setQ4={setDecisionStyle}
-              q5={routineImportance} setQ5={setRoutineImportance}
-              validations={{
-                validQ1: validFavoriteColor,
-                validQ2: validSocialSituation,
-                validQ3: validPlanFrequency,
-                validQ4: validDecisionStyle,
-                validQ5: validRoutineImportance,
-              }}
-            />
-          </Step>
-  
-          <Step>
-            <StepComplete submitted={submitted} />
-          </Step>
-        </Stepper>
-      </div>
-    </main>
+<main className="min-h-screen flex items-center justify-center bg-baltazarPurple font-baltazar p-6 sm:p-12">
+  <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl p-10 sm:p-16">
+    <h1 className="text-4xl sm:text-5xl font-extrabold mb-10 sm:mb-16 text-center text-[#0057B7] tracking-wide">
+      Anketa osobnosti
+    </h1>
+
+    <Stepper
+      initialStep={1}
+      onStepChange={setCurrentStep}
+      onFinalStepCompleted={handleFinalStepComplete}
+      backButtonText="Nazad"
+      nextButtonText="Dalje"
+      className="space-y-12 sm:space-y-20"
+      disableNext={!isStepValid(currentStep)}
+    >
+      <Step>
+        <StepName name={name} setName={setName} valid={validName} />
+      </Step>
+
+      <Step>
+        <StepEmail email={email} setEmail={setEmail} valid={validEmail} />
+        <StepConsent consent={consent} setConsent={setConsent} valid={validConsent} />
+      </Step>
+
+      <Step>
+        <StepPersonalityQuestions
+          q1={favoriteColor} setQ1={setFavoriteColor}
+          q2={socialSituation} setQ2={setSocialSituation}
+          q3={planFrequency} setQ3={setPlanFrequency}
+          q4={decisionStyle} setQ4={setDecisionStyle}
+          q5={routineImportance} setQ5={setRoutineImportance}
+          validations={{
+            validQ1: validFavoriteColor,
+            validQ2: validSocialSituation,
+            validQ3: validPlanFrequency,
+            validQ4: validDecisionStyle,
+            validQ5: validRoutineImportance,
+          }}
+        />
+      </Step>
+
+      <Step>
+        <StepComplete submitted={submitted} />
+      </Step>
+    </Stepper>
+  </div>
+</main>
+
+
   );
   }

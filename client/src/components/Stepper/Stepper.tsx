@@ -87,19 +87,20 @@ export default function Stepper({
 
   return (
     <div
-      className="flex min-h-full flex-1 flex-col items-center justify-center p-4 sm:aspect-[4/3] md:aspect-[2/1]"
+      className="flex min-h-full flex-1 flex-col items-center justify-center p-6 sm:aspect-[4/3] md:aspect-[2/1]"
       {...rest}
     >
       <div
-        className={`mx-auto w-full max-w-md rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
+        className={`mx-auto w-full max-w-5xl rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
         style={{ border: "1px solid #222" }}
       >
         <div
-          className={`${stepContainerClassName} flex w-full items-center p-8`}
+          className={`${stepContainerClassName} flex w-full items-center p-6 sm:p-8`}
         >
-          {stepsArray.map((_, index) => {
+          {/* Step indikatori */}
+          {Children.toArray(children).map((_, index) => {
             const stepNumber = index + 1;
-            const isNotLastStep = index < totalSteps - 1;
+            const isNotLastStep = index < Children.count(children) - 1;
             return (
               <React.Fragment key={stepNumber}>
                 {renderStepIndicator ? (
@@ -134,13 +135,13 @@ export default function Stepper({
           isCompleted={isCompleted}
           currentStep={currentStep}
           direction={direction}
-          className={`space-y-2 px-8 ${contentClassName}`}
+          className={`space-y-2 px-10 sm:px-16 ${contentClassName}`} // veći padding sa strane
         >
-          {stepsArray[currentStep - 1]}
+          {Children.toArray(children)[currentStep - 1]}
         </StepContentWrapper>
 
         {!isCompleted && (
-          <div className={`px-8 pb-8 ${footerClassName}`}>
+          <div className={`px-10 sm:px-16 pb-8 ${footerClassName}`}>
             <div
               className={`mt-10 flex ${
                 currentStep !== 1 ? "justify-between" : "justify-end"
@@ -149,7 +150,7 @@ export default function Stepper({
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className={`duration-350 rounded px-4 py-2 text-sm font-medium transition ${
+                  className={`duration-350 rounded px-5 py-3 text-base font-medium transition ${
                     currentStep === 1
                       ? "pointer-events-none opacity-50 text-gray-400"
                       : "text-[#0057B7] hover:text-[#003d7a]"
@@ -162,7 +163,7 @@ export default function Stepper({
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
                 disabled={disableNext}
-                className={`duration-350 flex items-center justify-center rounded-full py-2 px-6 font-medium tracking-tight text-white transition
+                className={`duration-350 flex items-center justify-center rounded-full py-3 px-8 text-base font-medium tracking-tight text-white transition
                   ${disableNext
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#0057B7] hover:bg-[#003d7a] active:bg-[#00264d]"
