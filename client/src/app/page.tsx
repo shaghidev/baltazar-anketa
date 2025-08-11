@@ -1,103 +1,149 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import { jsPDF } from 'jspdf'
+import Stepper, { Step } from '../components/Stepper/Stepper'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [consent, setConsent] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const [validStep1, setValidStep1] = useState(false)
+  const [validStep2, setValidStep2] = useState(false)
+  const [validStep3, setValidStep3] = useState(false)
+
+  useEffect(() => setValidStep1(name.trim().length > 0), [name])
+  useEffect(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    setValidStep2(emailRegex.test(email))
+  }, [email])
+  useEffect(() => setValidStep3(consent), [consent])
+
+  const calculatePersonality = (): string => {
+    return 'Ekstrovert'
+  }
+
+  const generatePDF = (name: string, personality: string) => {
+    const doc = new jsPDF()
+    doc.setFontSize(24)
+    doc.text('Diploma o osobnosti', 20, 30)
+    doc.setFontSize(18)
+    doc.text(`Ime: ${name}`, 20, 60)
+    doc.text(`Tip osobnosti: ${personality}`, 20, 90)
+    doc.save(`diploma-${name}.pdf`)
+  }
+
+  const handleFinalStepComplete = () => {
+    if (!validStep1) return alert('Unesite ime.')
+    if (!validStep2) return alert('Unesite ispravan email.')
+    if (!validStep3) return alert('Morate prihvatiti GDPR uvjete.')
+
+    const personalityType = calculatePersonality()
+    generatePDF(name, personalityType)
+    setSubmitted(true)
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-baltazarGray font-baltazar p-6">
+      <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-10">
+        <h1 className="text-4xl font-extrabold mb-12 text-center text-[#0057B7] tracking-wide">
+          Anketa osobnosti
+        </h1>
+
+        <Stepper
+          initialStep={1}
+          onFinalStepCompleted={handleFinalStepComplete}
+          backButtonText="Nazad"
+          nextButtonText="Dalje"
+          className="space-y-14"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+          <Step>
+            <div className="flex flex-col gap-2">
+              <label className="text-lg font-semibold text-[#0057B7]">Ime</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Unesite ime"
+                className={`w-full rounded-xl border-2 p-3 text-gray-900 placeholder-gray-400
+                  transition focus:outline-none focus:ring-4 focus:ring-offset-1
+                  ${
+                    validStep1
+                      ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
+                      : 'border-red-500 focus:ring-red-400 focus:border-red-500'
+                  }`}
+              />
+              {!validStep1 && (
+                <p className="text-red-600 text-sm italic">Ime je obavezno.</p>
+              )}
+            </div>
+          </Step>
+
+          <Step>
+            <div className="flex flex-col gap-2">
+              <label className="text-lg font-semibold text-[#0057B7]">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Unesite email"
+                className={`w-full rounded-xl border-2 p-3 text-gray-900 placeholder-gray-400
+                  transition focus:outline-none focus:ring-4 focus:ring-offset-1
+                  ${
+                    validStep2
+                      ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
+                      : 'border-red-500 focus:ring-red-400 focus:border-red-500'
+                  }`}
+              />
+              {!validStep2 && (
+                <p className="text-red-600 text-sm italic">Unesite ispravan email.</p>
+              )}
+            </div>
+          </Step>
+
+          <Step>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={e => setConsent(e.target.checked)}
+                  id="consent"
+                  className={`w-6 h-6 rounded border-2 border-gray-400
+                    transition focus:outline-none focus:ring-4 focus:ring-offset-1
+                    ${
+                      validStep3
+                        ? 'focus:ring-[#0057B7] border-[#0057B7]'
+                        : 'focus:ring-red-400 border-red-500'
+                    }`}
+                />
+                <span className="text-lg text-[#0057B7]">Prihvaćam GDPR uvjete</span>
+              </label>
+              {!validStep3 && (
+                <p className="text-red-600 text-sm italic ml-9">
+                  Morate prihvatiti GDPR uvjete.
+                </p>
+              )}
+            </div>
+          </Step>
+
+          <Step>
+            <div className="text-center">
+              {submitted ? (
+                <p className="text-green-600 font-semibold text-lg">
+                  Hvala! Diploma je generirana i spremna za preuzimanje.
+                </p>
+              ) : (
+                <p className="font-semibold text-[#0057B7] text-lg">
+                  Kliknite "Complete" za generiranje diplome.
+                </p>
+              )}
+            </div>
+          </Step>
+        </Stepper>
+      </div>
+    </main>
+  )
 }
