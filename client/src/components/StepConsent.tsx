@@ -25,7 +25,17 @@ export default function StepConsent({ consent, setConsent, valid }: StepConsentP
                 : 'focus:ring-red-400 border-red-500'
             }`}
         />
-        <span className="text-lg text-[#0057B7]">Prihvaćam GDPR uvjete</span>
+<span className="text-lg text-[#0057B7]">
+  Prihvaćam{' '}
+  <a
+    href="https://git.hr/opci-uvjeti-koristenja/?srsltid=AfmBOooH3u5SFZKr_-YQmafsSeyZCdPGnhrRAlU6m73zoEF8kYfnNPmW"
+    className="text-[#0057B7] underline"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    GDPR uvjete
+  </a>
+</span>
       </label>
       {!valid && (
         <p className="text-red-600 text-sm italic ml-9">
