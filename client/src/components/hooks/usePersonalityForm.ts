@@ -1,15 +1,23 @@
 'use client'
+
 import { useState, useEffect } from 'react'
+import {
+  FavoriteColor,
+  SocialSituation,
+  PlanFrequency,
+  DecisionStyle,
+  RoutineImportance,
+} from './scoring'
 
 export default function usePersonalityForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [consent, setConsent] = useState(false)
-  const [favoriteColor, setFavoriteColor] = useState('')
-  const [socialSituation, setSocialSituation] = useState('')
-  const [planFrequency, setPlanFrequency] = useState('')
-  const [decisionStyle, setDecisionStyle] = useState('')
-  const [routineImportance, setRoutineImportance] = useState('')
+  const [favoriteColor, setFavoriteColor] = useState<FavoriteColor | ''>('')
+  const [socialSituation, setSocialSituation] = useState<SocialSituation | ''>('')
+  const [planFrequency, setPlanFrequency] = useState<PlanFrequency | ''>('')
+  const [decisionStyle, setDecisionStyle] = useState<DecisionStyle | ''>('')
+  const [routineImportance, setRoutineImportance] = useState<RoutineImportance | ''>('')
 
   const [validName, setValidName] = useState(false)
   const [validEmail, setValidEmail] = useState(false)
