@@ -1,4 +1,6 @@
 'use client'
+
+import React from 'react'
 import Stepper, { Step } from '../components/Stepper/Stepper'
 import StepName from '../components/StepName'
 import StepEmail from '../components/StepEmail'
@@ -31,8 +33,8 @@ export default function Home() {
   } = usePersonalityForm()
 
   const { generatePDF } = useGeneratePDF()
+  const [currentStep, setCurrentStep] = React.useState(1)
 
-  // Izračun osobnosti (možeš proširiti)
   const calculatePersonality = () => 'Ekstrovert'
 
   const handleFinalStepComplete = () => {
@@ -45,23 +47,44 @@ export default function Home() {
     if (!validDecisionStyle) return alert('Odaberite stil donošenja odluka.')
     if (!validRoutineImportance) return alert('Odaberite važnost rutine.')
 
-    generatePDF(name, email, calculatePersonality())
+    generatePDF(name, calculatePersonality())
     setSubmitted(true)
   }
 
+  function isStepValid(step: number) {
+    switch (step) {
+      case 1:
+        return validName
+      case 2:
+        return validEmail && validConsent
+      case 3:
+        return (
+          validFavoriteColor &&
+          validSocialSituation &&
+          validPlanFrequency &&
+          validDecisionStyle &&
+          validRoutineImportance
+        )
+      default:
+        return true
+    }
+  }
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-baltazarGray font-baltazar p-6">
-      <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-10">
-        <h1 className="text-4xl font-extrabold mb-12 text-center text-[#0057B7] tracking-wide">
+    <main className="min-h-screen flex items-center justify-center bg-baltazarPurple font-baltazar p-2 sm:p-6">
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 sm:p-10">
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-8 sm:mb-12 text-center text-[#0057B7] tracking-wide">
           Anketa osobnosti
         </h1>
 
         <Stepper
           initialStep={1}
+          onStepChange={setCurrentStep}
           onFinalStepCompleted={handleFinalStepComplete}
           backButtonText="Nazad"
           nextButtonText="Dalje"
-          className="space-y-14"
+          className="space-y-10 sm:space-y-14"
+          disableNext={!isStepValid(currentStep)}
         >
           <Step>
             <StepName name={name} setName={setName} valid={validName} />

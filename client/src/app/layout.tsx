@@ -9,7 +9,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="hr">
-      <body className="font-baltazar relative min-h-screen flex items-center justify-center px-6 font-baltazar">
+      <body className="relative min-h-screen flex items-center justify-center px-6 font-baltazar">
         {/* Pozadina */}
         <div
           style={{
@@ -33,24 +33,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         {/* Glavni sadržaj */}
         <div
-  style={{
-    position: 'relative',
-    zIndex: 10,
-    width: '100%',
-    maxWidth: '960px',
-    minHeight: '100vh',
-    borderRadius: '1rem',
-    padding: '2.5rem',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  }}
->
-  {children}
-</div>
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            width: '100%',
+            maxWidth: '960px',
+            minHeight: '100vh',
+            borderRadius: '1rem',
+            padding: '2.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {children}
+        </div>
 
-      
+
       </body>
     </html>
   )

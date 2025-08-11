@@ -9,6 +9,7 @@ import React, {
 import { motion, AnimatePresence, Variants } from "motion/react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
+  disableNext?: boolean;
   children: ReactNode;
   initialStep?: number;
   onStepChange?: (step: number) => void;
@@ -43,6 +44,7 @@ export default function Stepper({
   backButtonText = "Nazad",
   nextButtonText = "Dalje",
   disableStepIndicators = false,
+  disableNext = false,
   renderStepIndicator,
   ...rest
 }: StepperProps) {
@@ -70,15 +72,17 @@ export default function Stepper({
   };
 
   const handleNext = () => {
-    if (!isLastStep) {
+    if (!isLastStep && !disableNext) {
       setDirection(1);
       updateStep(currentStep + 1);
     }
   };
 
   const handleComplete = () => {
-    setDirection(1);
-    updateStep(totalSteps + 1);
+    if (!disableNext) {
+      setDirection(1);
+      updateStep(totalSteps + 1);
+    }
   };
 
   return (
@@ -157,7 +161,12 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="duration-350 flex items-center justify-center rounded-full bg-[#0057B7] py-2 px-6 font-medium tracking-tight text-white transition hover:bg-[#003d7a] active:bg-[#00264d]"
+                disabled={disableNext}
+                className={`duration-350 flex items-center justify-center rounded-full py-2 px-6 font-medium tracking-tight text-white transition
+                  ${disableNext
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#0057B7] hover:bg-[#003d7a] active:bg-[#00264d]"
+                  }`}
                 {...nextButtonProps}
               >
                 {isLastStep ? "Complete" : nextButtonText}
@@ -312,7 +321,7 @@ function StepIndicator({
         {status === "complete" ? (
           <CheckIcon className="h-4 w-4 text-black" />
         ) : status === "active" ? (
-          <div className="h-3 w-3 rounded-full bg-[#060010]" />
+          <div className="h-3 w-3 rounded-full bg-[#FACC15]" />
         ) : (
           <span className="text-sm">{step}</span>
         )}
@@ -344,9 +353,7 @@ function StepConnector({ isComplete }: StepConnectorProps) {
   );
 }
 
-interface CheckIconProps extends React.SVGProps<SVGSVGElement> {}
-
-function CheckIcon(props: CheckIconProps) {
+function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -369,5 +376,5 @@ function CheckIcon(props: CheckIconProps) {
         d="M5 13l4 4L19 7"
       />
     </svg>
-  );
+  )
 }

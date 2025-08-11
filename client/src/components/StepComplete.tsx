@@ -15,9 +15,10 @@ export default function StepComplete({ submitted }: StepCompleteProps) {
         </p>
       ) : (
         <p className="font-semibold text-[#0057B7] text-lg">
-          Kliknite "Complete" za generiranje diplome.
+          Kliknite &quot;Complete&quot; za generiranje diplome.
         </p>
       )}
     </div>
   )
+  
 }
