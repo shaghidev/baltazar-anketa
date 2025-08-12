@@ -74,7 +74,6 @@ export default function Home() {
       })
       setPersonality(p)
       setSubmitted(true)
-      generatePDF(name, `${p.name}\n\n${p.description}`)
       setShowWhatsApp(true)
     } else {
       setShowWhatsApp(false)
@@ -88,7 +87,18 @@ export default function Home() {
       alert('Molimo odgovorite na sva pitanja prije dovršetka.')
       return
     }
-    // dodatna logika ako treba
+  
+    const p = calculatePersonality({
+      hobby,
+      reactionToNotKnowing,
+      helpingBehavior,
+      inventionIdea,
+      routineImportance,
+    })
+    setPersonality(p)
+    setSubmitted(true)
+    generatePDF(name, `${p.name}\n\n${p.description}`)
+    setShowWhatsApp(true)
   }
 
   return (

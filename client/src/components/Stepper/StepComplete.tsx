@@ -66,7 +66,7 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
         <div className="mt-8 p-4 bg-green-100 border border-green-400 rounded-lg text-green-800 font-semibold">
           🎉 Pridruži se našoj WhatsApp grupi za više zabave i informacija!<br />
           <a
-            href="https://chat.whatsapp.com/tvoj-link"
+            href="https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 underline hover:text-blue-800"
