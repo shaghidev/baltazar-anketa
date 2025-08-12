@@ -70,8 +70,13 @@ export default function StepPersonalityQuestions({
   setQ5,
   validations,
 }: StepPersonalityQuestionsProps) {
-  const questionStyle =
-    'w-full rounded-xl border-2 p-3 text-gray-900 transition focus:outline-none focus:ring-4 focus:ring-offset-1';
+  const optionClass = (selected: boolean) =>
+    `min-w-[120px] sm:min-w-[140px] px-5 py-3 rounded-xl border-2 cursor-pointer select-none transition
+    ${
+      selected
+        ? "border-[#0057B7] bg-[#cde5ff] shadow-md"
+        : "border-gray-300 hover:border-[#0057B7] hover:bg-[#e6f0ff]"
+    } focus:outline-none focus:ring-4 focus:ring-[#0057B7] focus:ring-offset-1`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,21 +85,24 @@ export default function StepPersonalityQuestions({
         <label className="text-lg font-semibold text-[#0057B7]">
           Koja bi bila tvoja omiljena Baltazarova sprava?
         </label>
-        <select
-          value={q1}
-          onChange={e => setQ1(e.target.value as FavoriteColor)}
-          className={`${questionStyle} ${
-            validations.validQ1
-              ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
-              : 'border-red-500 focus:ring-red-400 focus:border-red-500'
-          }`}
-        >
-          <option value="">Odaberite...</option>
-          <option value="mjehuricomat">Mjehurić-o-mat</option>
-          <option value="vremenski_cajnik">Vremenski čajnik</option>
-          <option value="kisobran_bez_kise">Kišobran bez kiše</option>
-          <option value="leteci_bicikl">Leteći bicikl</option>
-        </select>
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[
+            { value: "mjehuricomat", label: "Mjehurić-o-mat" },
+            { value: "vremenski_cajnik", label: "Vremenski čajnik" },
+            { value: "kisobran_bez_kise", label: "Kišobran bez kiše" },
+            { value: "leteci_bicikl", label: "Leteći bicikl" },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setQ1(option.value as FavoriteColor)}
+              className={optionClass(q1 === option.value)}
+              aria-pressed={q1 === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {!validations.validQ1 && (
           <p className="text-red-600 text-sm italic">Molimo odaberite opciju.</p>
         )}
@@ -105,21 +113,24 @@ export default function StepPersonalityQuestions({
         <label className="text-lg font-semibold text-[#0057B7]">
           Kako rješavaš probleme u Baltazargradu?
         </label>
-        <select
-          value={q2}
-          onChange={e => setQ2(e.target.value as SocialSituation)}
-          className={`${questionStyle} ${
-            validations.validQ2
-              ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
-              : 'border-red-500 focus:ring-red-400 focus:border-red-500'
-          }`}
-        >
-          <option value="">Odaberite...</option>
-          <option value="nova_naprava">Izmislim novu napravu</option>
-          <option value="pitam_susjede">Pitam susjede za pomoć</option>
-          <option value="isprobam">Isprobam dok ne uspije</option>
-          <option value="planiram">Napravim plan i držim ga se</option>
-        </select>
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[
+            { value: "nova_naprava", label: "Izmislim novu napravu" },
+            { value: "pitam_susjede", label: "Pitam susjede za pomoć" },
+            { value: "isprobam", label: "Isprobam dok ne uspije" },
+            { value: "planiram", label: "Napravim plan i držim ga se" },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setQ2(option.value as SocialSituation)}
+              className={optionClass(q2 === option.value)}
+              aria-pressed={q2 === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {!validations.validQ2 && (
           <p className="text-red-600 text-sm italic">Molimo odaberite opciju.</p>
         )}
@@ -130,21 +141,24 @@ export default function StepPersonalityQuestions({
         <label className="text-lg font-semibold text-[#0057B7]">
           Koja ti je omiljena boja u gradu?
         </label>
-        <select
-          value={q3}
-          onChange={e => setQ3(e.target.value as PlanFrequency)}
-          className={`${questionStyle} ${
-            validations.validQ3
-              ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
-              : 'border-red-500 focus:ring-red-400 focus:border-red-500'
-          }`}
-        >
-          <option value="">Odaberite...</option>
-          <option value="baltazar_plava">Baltazar plava</option>
-          <option value="cvjetna_zelena">Cvjetna zelena</option>
-          <option value="suncano_zuta">Sunčano žuta</option>
-          <option value="ljubicasta_fantazija">Ljubičasta fantazija</option>
-        </select>
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[
+            { value: "baltazar_plava", label: "Baltazar plava" },
+            { value: "cvjetna_zelena", label: "Cvjetna zelena" },
+            { value: "suncano_zuta", label: "Sunčano žuta" },
+            { value: "ljubicasta_fantazija", label: "Ljubičasta fantazija" },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setQ3(option.value as PlanFrequency)}
+              className={optionClass(q3 === option.value)}
+              aria-pressed={q3 === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {!validations.validQ3 && (
           <p className="text-red-600 text-sm italic">Molimo odaberite opciju.</p>
         )}
@@ -155,21 +169,24 @@ export default function StepPersonalityQuestions({
         <label className="text-lg font-semibold text-[#0057B7]">
           Kad bi bio lik iz crtića, bio bi:
         </label>
-        <select
-          value={q4}
-          onChange={e => setQ4(e.target.value as DecisionStyle)}
-          className={`${questionStyle} ${
-            validations.validQ4
-              ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
-              : 'border-red-500 focus:ring-red-400 focus:border-red-500'
-          }`}
-        >
-          <option value="">Odaberite...</option>
-          <option value="profesor_baltazar">Profesor Baltazar</option>
-          <option value="izumitelj_amater">Izumitelj amater</option>
-          <option value="umjetnik_sanjar">Umjetnik sanjar</option>
-          <option value="pomocnik_iz_sjene">Pomoćnik iz sjene</option>
-        </select>
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[
+            { value: "profesor_baltazar", label: "Profesor Baltazar" },
+            { value: "izumitelj_amater", label: "Izumitelj amater" },
+            { value: "umjetnik_sanjar", label: "Umjetnik sanjar" },
+            { value: "pomocnik_iz_sjene", label: "Pomoćnik iz sjene" },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setQ4(option.value as DecisionStyle)}
+              className={optionClass(q4 === option.value)}
+              aria-pressed={q4 === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {!validations.validQ4 && (
           <p className="text-red-600 text-sm italic">Molimo odaberite opciju.</p>
         )}
@@ -180,21 +197,24 @@ export default function StepPersonalityQuestions({
         <label className="text-lg font-semibold text-[#0057B7]">
           Što te najviše veseli u Baltazargradu?
         </label>
-        <select
-          value={q5}
-          onChange={e => setQ5(e.target.value as RoutineImportance)}
-          className={`${questionStyle} ${
-            validations.validQ5
-              ? 'border-[#0057B7] focus:ring-[#0057B7] focus:border-[#0057B7]'
-              : 'border-red-500 focus:ring-red-400 focus:border-red-500'
-          }`}
-        >
-          <option value="">Odaberite...</option>
-          <option value="nova_iznenadjenja">Nova iznenađenja</option>
-          <option value="pomaganje">Pomaganje drugima</option>
-          <option value="skupljanje_predmeta">Skupljanje čudnih predmeta</option>
-          <option value="mirne_setnje">Mirne šetnje parkom</option>
-        </select>
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[
+            { value: "nova_iznenadjenja", label: "Nova iznenađenja" },
+            { value: "pomaganje", label: "Pomaganje drugima" },
+            { value: "skupljanje_predmeta", label: "Skupljanje čudnih predmeta" },
+            { value: "mirne_setnje", label: "Mirne šetnje parkom" },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setQ5(option.value as RoutineImportance)}
+              className={optionClass(q5 === option.value)}
+              aria-pressed={q5 === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {!validations.validQ5 && (
           <p className="text-red-600 text-sm italic">Molimo odaberite opciju.</p>
         )}
@@ -202,3 +222,5 @@ export default function StepPersonalityQuestions({
     </div>
   );
 }
+
+
