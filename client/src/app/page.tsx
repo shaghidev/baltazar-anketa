@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Stepper, { Step } from '../components/Stepper/Stepper'
 import StepName from '../components/Stepper/StepName'
 import StepEmail from '../components/Stepper/StepEmail'
@@ -10,6 +10,8 @@ import StepComplete from '../components/Stepper/StepComplete'
 import { useGeneratePDF } from '../components/hooks/useGeneratePDF'
 import { calculatePersonality } from '../components/hooks/calculatePersonality'
 import { PersonalityType } from '../components/hooks/scoring'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 
 export default function Home() {
   const baltazarImages = [
@@ -38,6 +40,17 @@ export default function Home() {
   const [showWhatsApp, setShowWhatsApp] = useState(false)
 
   const { generatePDF } = useGeneratePDF()
+  const { width, height } = useWindowSize()
+
+  // Play audio kad se prikazuju konfete (diploma)
+  useEffect(() => {
+    if (submitted) {
+      const audio = new Audio('/sounds/confetti-sound.mp3') // stavi svoj zvuk ovdje
+      audio.play().catch(() => {
+        // ignoriraj ako korisnik nije kliknuo ili blokirao autoplay
+      })
+    }
+  }, [submitted])
 
   // Validacija po koracima
   const isStepValid = (step: number) => {
@@ -75,8 +88,10 @@ export default function Home() {
       setPersonality(p)
       setSubmitted(true)
       setShowWhatsApp(true)
+      generatePDF(name, `${p.name}\n\n${p.description}`)
     } else {
       setShowWhatsApp(false)
+      setSubmitted(false)
     }
     setCurrentStep(step)
     window.scrollTo(0, 0)
@@ -87,7 +102,6 @@ export default function Home() {
       alert('Molimo odgovorite na sva pitanja prije dovršetka.')
       return
     }
-  
     const p = calculatePersonality({
       hobby,
       reactionToNotKnowing,
@@ -97,12 +111,24 @@ export default function Home() {
     })
     setPersonality(p)
     setSubmitted(true)
-    generatePDF(name, `${p.name}\n\n${p.description}`)
     setShowWhatsApp(true)
+    generatePDF(name, `${p.name}\n\n${p.description}`)
   }
 
   return (
-    <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full">
+    <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full relative">
+      {/* Konfete preko cijelog ekrana kad je diploma */}
+      {submitted && (
+  <Confetti
+    width={width}
+    height={height}
+    recycle={false}
+    numberOfPieces={500}
+    style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }}
+  />
+)}
+
+
       <div
         className="
           relative
@@ -111,15 +137,16 @@ export default function Home() {
           w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px]
           p-4 sm:p-8
           overflow-hidden
+          z-10
         "
       >
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
-        <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide">
+        <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide z-20">
           Koja je tvoja supermoć iz Baltazargrada?
         </h1>
 
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center mb-3 z-20">
           <img
             src={baltazarImages[currentStep - 1]}
             alt={`Profesor Baltazar - Step ${currentStep}`}
@@ -133,7 +160,7 @@ export default function Home() {
           onFinalStepCompleted={handleFinalStepComplete}
           backButtonText="Nazad"
           nextButtonText="Dalje"
-          className="relative space-y-8 sm:space-y-12"
+          className="relative space-y-8 sm:space-y-12 z-20"
           disableNext={!isStepValid(currentStep)}
         >
           <Step>
@@ -164,6 +191,8 @@ export default function Home() {
             <StepComplete personality={personality} submitted={submitted} name={name} showWhatsApp={showWhatsApp} />
           </Step>
         </Stepper>
+
+     
       </div>
     </main>
   )

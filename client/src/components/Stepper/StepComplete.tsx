@@ -20,10 +20,14 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
   }
 
   return (
-    <div className="text-center p-4 max-w-md mx-auto relative">
-      <h2 className="text-2xl font-bold mb-4">Tvoja supermoć iz Baltazargrada je:</h2>
-      <h3 className="text-xl text-blue-700 font-semibold mb-6">{personality.name}</h3>
-      <p className="text-gray-800 whitespace-pre-line mb-10">{personality.description}</p>
+    <div className="flex flex-col items-center p-6 max-w-md mx-auto relative  ">
+      <h2 className="text-3xl font-bold mb-4 text-center text-[#0057B7]">
+        Tvoja supermoć iz Baltazargrada je:
+      </h2>
+      <h3 className="text-2xl text-blue-700 font-semibold mb-6 text-center">{personality.name}</h3>
+      <p className="text-gray-800 whitespace-pre-line mb-12 text-center leading-relaxed">
+        {personality.description}
+      </p>
 
       <div
         className="
@@ -33,11 +37,12 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
           bg-yellow-50
           p-8
           shadow-lg
-          text-left
+          text-center
           select-none
+          w-full
         "
       >
-        <h3 className="text-2xl font-extrabold mb-6 text-center text-yellow-700 tracking-wide">
+        <h3 className="text-2xl font-extrabold mb-6 text-yellow-700 tracking-wide">
           Diploma počasnog građanina Baltazargrada
         </h3>
 
@@ -50,10 +55,10 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
         </p>
 
         <div className="mt-12">
-          <p className="border-t border-yellow-400 pt-4 w-48 mx-auto text-center font-handwriting text-3xl text-yellow-700">
+          <p className="border-t border-yellow-400 pt-4 w-48 mx-auto font-handwriting text-3xl text-yellow-700">
             Profesor Baltazar
           </p>
-          <p className="text-center text-yellow-700 mt-1 font-semibold tracking-wide italic">
+          <p className="mt-1 font-semibold tracking-wide italic text-yellow-700">
             (direktor radionice izuma)
           </p>
         </div>
@@ -63,7 +68,7 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
       </div>
 
       {showWhatsApp && (
-        <div className="mt-8 p-4 bg-green-100 border border-green-400 rounded-lg text-green-800 font-semibold">
+        <div className="mt-8 p-4 bg-green-100 border border-green-400 rounded-lg text-green-800 font-semibold text-center max-w-sm">
           🎉 Pridruži se našoj WhatsApp grupi za više zabave i informacija!<br />
           <a
             href="https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N"
