@@ -60,6 +60,8 @@ export default function Home() {
   const onStepChange = (step: number) => {
     if (step < currentStep) {
       // dozvoli nazad bez uvjeta
+      window.scrollTo(0, 0)  // skrolaj na vrh kad ide nazad
+
       setCurrentStep(step)
       return
     }
@@ -69,6 +71,8 @@ export default function Home() {
       return
     }
     setCurrentStep(step)
+    window.scrollTo(0, 0) // skrolaj na vrh kad ide naprijed
+
   }
 
   // Funkcija koja se poziva samo na zadnjem koraku kada korisnik klikne "Complete"
