@@ -88,7 +88,6 @@ export default function Home() {
       setPersonality(p)
       setSubmitted(true)
       setShowWhatsApp(true)
-      generatePDF(name, `${p.name}\n\n${p.description}`)
     } else {
       setShowWhatsApp(false)
       setSubmitted(false)
