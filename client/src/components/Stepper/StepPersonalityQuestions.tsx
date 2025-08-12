@@ -11,8 +11,8 @@ interface Props {
   setHelpingBehavior: React.Dispatch<React.SetStateAction<string>>
   inventionIdea: string
   setInventionIdea: React.Dispatch<React.SetStateAction<string>>
-  routineImportance: string
-  setRoutineImportance: React.Dispatch<React.SetStateAction<string>>
+
+  
 }
 
 export default function StepPersonalityQuestions({
@@ -24,8 +24,7 @@ export default function StepPersonalityQuestions({
   setHelpingBehavior,
   inventionIdea,
   setInventionIdea,
-  routineImportance,
-  setRoutineImportance,
+
 }: Props) {
   const renderQuestion = (
     title: string,

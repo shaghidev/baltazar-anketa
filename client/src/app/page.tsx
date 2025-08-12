@@ -36,7 +36,6 @@ export default function Home() {
 
   const [personality, setPersonality] = useState<PersonalityType | null>(null)
   const [submitted, setSubmitted] = useState(false)
-
   const [showWhatsApp, setShowWhatsApp] = useState(false)
 
   const { generatePDF } = useGeneratePDF()
@@ -45,10 +44,8 @@ export default function Home() {
   // Play audio kad se prikazuju konfete (diploma)
   useEffect(() => {
     if (submitted) {
-      const audio = new Audio('/sounds/confetti-sound.mp3') // stavi svoj zvuk ovdje
-      audio.play().catch(() => {
-        // ignoriraj ako korisnik nije kliknuo ili blokirao autoplay
-      })
+      const audio = new Audio('/sounds/confetti-sound.mp3')
+      audio.play().catch(() => {})
     }
   }, [submitted])
 
@@ -71,7 +68,6 @@ export default function Home() {
     }
   }
 
-  // Pri promjeni koraka računaj osobnost ako se ide na rezultat (korak 4)
   const onStepChange = (step: number) => {
     if (step === 4) {
       if (!isStepValid(3)) {
@@ -96,11 +92,36 @@ export default function Home() {
     window.scrollTo(0, 0)
   }
 
-  const handleFinalStepComplete = () => {
+  async function sendDataToBackend(data: { name: string; email: string; consent: boolean }) {
+    console.log('Šaljem podatke na backend:', data)
+    try {
+      const response = await fetch('http://localhost:3001/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Greška pri slanju podataka')
+      }
+      return await response.json()
+    } catch (error: any) {
+      console.error('Greška:', error)
+      throw error
+    }
+  }
+
+  const handleFinalStepComplete = async () => {
     if (!isStepValid(3)) {
       alert('Molimo odgovorite na sva pitanja prije dovršetka.')
       return
     }
+
+    if (!name.trim() || !email.trim() || !consent) {
+      alert('Molimo popunite ime, email i označite dopuštenje.')
+      return
+    }
+
     const p = calculatePersonality({
       hobby,
       reactionToNotKnowing,
@@ -108,15 +129,22 @@ export default function Home() {
       inventionIdea,
       routineImportance,
     })
+
     setPersonality(p)
     setSubmitted(true)
     setShowWhatsApp(true)
     generatePDF(name, `${p.name}\n\n${p.description}`)
+
+    try {
+      const result = await sendDataToBackend({ name, email, consent })
+      console.log('Backend je odgovorio:', result)
+    } catch (error: any) {
+      alert('Došlo je do problema sa slanjem podataka: ' + error.message)
+    }
   }
 
   return (
     <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full relative">
-      {/* Konfete preko cijelog ekrana kad je diploma */}
       {submitted && (
         <Confetti
           width={width}
@@ -126,7 +154,6 @@ export default function Home() {
           style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }}
         />
       )}
-
 
       <div
         className="
@@ -142,11 +169,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
         <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide z-20">
-  {currentStep === 4
-    ? 'Tvoja supermoć iz Baltazargrada je '
-    : 'Koja je tvoja supermoć iz Baltazargrada?'}
-</h1>
-
+          {currentStep === 4
+            ? 'Tvoja supermoć iz Baltazargrada je '
+            : 'Koja je tvoja supermoć iz Baltazargrada?'}
+        </h1>
 
         <div className="flex justify-center mb-3 z-20">
           <img
@@ -184,17 +210,18 @@ export default function Home() {
               setHelpingBehavior={setHelpingBehavior}
               inventionIdea={inventionIdea}
               setInventionIdea={setInventionIdea}
-              routineImportance={routineImportance}
-              setRoutineImportance={setRoutineImportance}
             />
           </Step>
 
           <Step>
-            <StepComplete personality={personality} submitted={submitted} name={name} showWhatsApp={showWhatsApp} />
+            <StepComplete
+              personality={personality}
+              submitted={submitted}
+              name={name}
+              showWhatsApp={showWhatsApp}
+            />
           </Step>
         </Stepper>
-
-
       </div>
     </main>
   )
