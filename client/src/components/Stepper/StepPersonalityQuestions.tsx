@@ -27,103 +27,102 @@ export default function StepPersonalityQuestions({
   routineImportance,
   setRoutineImportance,
 }: Props) {
-  return (
-    <div>
-      <h2 className="text-xl font-bold mb-6">Kviz: Koja je tvoja supermoć iz Baltazargrada?</h2>
+  const renderQuestion = (
+    title: string,
+    name: string,
+    value: string,
+    setValue: React.Dispatch<React.SetStateAction<string>>,
+    options: { label: string; value: string }[]
+  ) => (
+    <fieldset className="mb-12">
+      <legend className="text-2xl font-extrabold mb-6 text-[#0057B7] drop-shadow-md">
+        {title}
+      </legend>
+      <div className="grid gap-6 sm:grid-cols-2">
+        {options.map(({ label, value: optionValue }) => (
+          <label
+            key={optionValue}
+            className={`
+              flex items-center p-5 rounded-3xl border-2 cursor-pointer select-none
+              transition-all duration-300 ease-in-out
+              shadow-sm
+              ${
+                value === optionValue
+                  ? 'bg-yellow-100 border-yellow-400 scale-[1.05] shadow-lg'
+                  : 'bg-white border-gray-300 hover:border-yellow-400 hover:shadow-md hover:scale-[1.02]'
+              }
+            `}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={optionValue}
+              checked={value === optionValue}
+              onChange={() => setValue(optionValue)}
+              className="hidden"
+            />
+            <span className="text-lg font-semibold text-gray-800">{label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
 
-      {/* Pitanje 1 */}
-      <fieldset className="mb-6">
-        <legend className="font-semibold mb-3">1. Što ti najviše voliš raditi u slobodno vrijeme?</legend>
-        {[
+  return (
+    <div className="p-8 mx-auto">
+
+
+      {renderQuestion(
+        '1. Što ti najviše voliš raditi u slobodno vrijeme?',
+        'hobby',
+        hobby,
+        setHobby,
+        [
           { label: 'Čitati knjige i učiti nove stvari', value: 'knowledge' },
           { label: 'Pomoći prijatelju koji je tužan ili treba pomoć', value: 'kindness' },
           { label: 'Osmisliti neki novi crtež, priču ili izum', value: 'creativity' },
           { label: 'Istraživati i postavljati pitanja o svijetu oko sebe', value: 'curiosity' },
-        ].map(({ label, value }) => (
-          <label key={value} className="block cursor-pointer mb-2">
-            <input
-              type="radio"
-              name="hobby"
-              value={value}
-              checked={hobby === value}
-              onChange={() => setHobby(value)}
-              className="mr-2"
-            />
-            {label}
-          </label>
-        ))}
-      </fieldset>
+        ]
+      )}
 
-      {/* Pitanje 2 */}
-      <fieldset className="mb-6">
-        <legend className="font-semibold mb-3">2. Kako se osjećaš kad nešto ne znaš?</legend>
-        {[
+      {renderQuestion(
+        '2. Kako se osjećaš kad nešto ne znaš?',
+        'reactionToNotKnowing',
+        reactionToNotKnowing,
+        setReactionToNotKnowing,
+        [
           { label: 'Želim odmah saznati kako to funkcionira', value: 'knowledge' },
           { label: 'Tražim nekoga tko mi može pomoći ili objasniti', value: 'kindness' },
           { label: 'Razmišljam kako bih mogao to riješiti na drugačiji, originalan način', value: 'creativity' },
           { label: 'Pitam mnogo pitanja i želim sve istražiti do kraja', value: 'curiosity' },
-        ].map(({ label, value }) => (
-          <label key={value} className="block cursor-pointer mb-2">
-            <input
-              type="radio"
-              name="reactionToNotKnowing"
-              value={value}
-              checked={reactionToNotKnowing === value}
-              onChange={() => setReactionToNotKnowing(value)}
-              className="mr-2"
-            />
-            {label}
-          </label>
-        ))}
-      </fieldset>
+        ]
+      )}
 
-      {/* Pitanje 3 */}
-      <fieldset className="mb-6">
-        <legend className="font-semibold mb-3">3. Kada vidiš nekoga kako pati, što najčešće napraviš?</legend>
-        {[
+      {renderQuestion(
+        '3. Kada vidiš nekoga kako pati, što najčešće napraviš?',
+        'helpingBehavior',
+        helpingBehavior,
+        setHelpingBehavior,
+        [
           { label: 'Pokušam naučiti što mu je potrebno da mu pomognem', value: 'knowledge' },
           { label: 'Pružim mu prijateljsku riječ ili zagrljaj', value: 'kindness' },
           { label: 'Osmislim zabavan način da mu popravim dan', value: 'creativity' },
           { label: 'Pitam zašto se to dogodilo i želim spriječiti da se ponovi', value: 'curiosity' },
-        ].map(({ label, value }) => (
-          <label key={value} className="block cursor-pointer mb-2">
-            <input
-              type="radio"
-              name="helpingBehavior"
-              value={value}
-              checked={helpingBehavior === value}
-              onChange={() => setHelpingBehavior(value)}
-              className="mr-2"
-            />
-            {label}
-          </label>
-        ))}
-      </fieldset>
+        ]
+      )}
 
-      {/* Pitanje 4 */}
-      <fieldset className="mb-6">
-        <legend className="font-semibold mb-3">4. Kad bi mogao/la izumiti nešto za Baltazargrad, što bi napravio/la?</legend>
-        {[
+      {renderQuestion(
+        '4. Kad bi mogao/la izumiti nešto za Baltazargrad, što bi napravio/la?',
+        'inventionIdea',
+        inventionIdea,
+        setInventionIdea,
+        [
           { label: 'Uređaj koji pomaže svima da brzo nauče nove stvari', value: 'knowledge' },
           { label: 'Stroj koji širi radost i prijateljstvo među ljudima', value: 'kindness' },
           { label: 'Maštoviti robot koji pomaže ljudima da se izraze kreativno', value: 'creativity' },
           { label: 'Alat koji otkriva nove nepoznate stvari u prirodi i svemiru', value: 'curiosity' },
-        ].map(({ label, value }) => (
-          <label key={value} className="block cursor-pointer mb-2">
-            <input
-              type="radio"
-              name="inventionIdea"
-              value={value}
-              checked={inventionIdea === value}
-              onChange={() => setInventionIdea(value)}
-              className="mr-2"
-            />
-            {label}
-          </label>
-        ))}
-      </fieldset>
-
-
+        ]
+      )}
     </div>
   )
 }
