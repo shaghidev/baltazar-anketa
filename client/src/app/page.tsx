@@ -21,6 +21,15 @@ import { useGeneratePDF } from '../components/hooks/useGeneratePDF'
 type Scoring = typeof scoring;
 
 export default function Home() {
+  const baltazarImages = [
+    "/images/baltazar-step1.png",
+    "/images/baltazar-step2.png",
+    "/images/baltazar-step3.png",
+    "/images/baltazar-step4.png",
+  ];
+
+  const [currentStep, setCurrentStep] = React.useState(1);
+
   const {
     name, setName,
     email, setEmail,
@@ -43,7 +52,6 @@ export default function Home() {
 
   const { generatePDF } = useGeneratePDF();
 
-  const [currentStep, setCurrentStep] = React.useState(1);
 
   // Funkcija za izračun osobnosti na temelju bodova
   const calculatePersonality = (): PersonalityType => {
@@ -136,53 +144,64 @@ export default function Home() {
       >
         {/* Overlay */}
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
-  
+
+
         {/* Sadržaj */}
         <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide">
           Anketa osobnosti
         </h1>
 
-    <Stepper
-      initialStep={1}
-      onStepChange={setCurrentStep}
-      onFinalStepCompleted={handleFinalStepComplete}
-      backButtonText="Nazad"
-      nextButtonText="Dalje"
-      className="relative space-y-8 sm:space-y-12"
-      disableNext={!isStepValid(currentStep)}
-    >
-      <Step>
-        <StepName name={name} setName={setName} valid={validName} />
-      </Step>
+             {/* Slika Baltazara za trenutni step */}
+             <div className="flex justify-center mb-3">
+             <img
+  src={baltazarImages[currentStep - 1]}
+  alt={`Profesor Baltazar - Step ${currentStep}`}
+  className="w-[150px] h-auto select-none"
+/>
 
-      <Step>
-        <StepEmail email={email} setEmail={setEmail} valid={validEmail} />
-        <StepConsent consent={consent} setConsent={setConsent} valid={validConsent} />
-      </Step>
+        </div>
 
-      <Step>
-        <StepPersonalityQuestions
-          q1={favoriteColor} setQ1={setFavoriteColor}
-          q2={socialSituation} setQ2={setSocialSituation}
-          q3={planFrequency} setQ3={setPlanFrequency}
-          q4={decisionStyle} setQ4={setDecisionStyle}
-          q5={routineImportance} setQ5={setRoutineImportance}
-          validations={{
-            validQ1: validFavoriteColor,
-            validQ2: validSocialSituation,
-            validQ3: validPlanFrequency,
-            validQ4: validDecisionStyle,
-            validQ5: validRoutineImportance,
-          }}
-        />
-      </Step>
+        <Stepper
+          initialStep={1}
+          onStepChange={setCurrentStep}
+          onFinalStepCompleted={handleFinalStepComplete}
+          backButtonText="Nazad"
+          nextButtonText="Dalje"
+          className="relative space-y-8 sm:space-y-12"
+          disableNext={!isStepValid(currentStep)}
+        >
+          <Step>
+            <StepName name={name} setName={setName} valid={validName} />
+          </Step>
 
-      <Step>
-        <StepComplete submitted={submitted} />
-      </Step>
-    </Stepper>
-  </div>
-</main>
+          <Step>
+            <StepEmail email={email} setEmail={setEmail} valid={validEmail} />
+            <StepConsent consent={consent} setConsent={setConsent} valid={validConsent} />
+          </Step>
+
+          <Step>
+            <StepPersonalityQuestions
+              q1={favoriteColor} setQ1={setFavoriteColor}
+              q2={socialSituation} setQ2={setSocialSituation}
+              q3={planFrequency} setQ3={setPlanFrequency}
+              q4={decisionStyle} setQ4={setDecisionStyle}
+              q5={routineImportance} setQ5={setRoutineImportance}
+              validations={{
+                validQ1: validFavoriteColor,
+                validQ2: validSocialSituation,
+                validQ3: validPlanFrequency,
+                validQ4: validDecisionStyle,
+                validQ5: validRoutineImportance,
+              }}
+            />
+          </Step>
+
+          <Step>
+            <StepComplete submitted={submitted} />
+          </Step>
+        </Stepper>
+      </div>
+    </main>
 
   );
-  }
+}
