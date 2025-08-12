@@ -25,3 +25,10 @@ body {
 .baltazarGray {
   @apply bg-[#F7F8FA]; /* svijetla siva */
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+.font-handwriting {
+  font-family: 'Pacifico', cursive;
+}
+
