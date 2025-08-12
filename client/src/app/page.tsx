@@ -35,6 +35,8 @@ export default function Home() {
   const [personality, setPersonality] = useState<PersonalityType | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
+  const [showWhatsApp, setShowWhatsApp] = useState(false)
+
   const { generatePDF } = useGeneratePDF()
 
   // Validacija po koracima
@@ -56,41 +58,37 @@ export default function Home() {
     }
   }
 
-  // Na promjenu koraka samo postavi korak, bez generiranja PDF-a
+  // Pri promjeni koraka računaj osobnost ako se ide na rezultat (korak 4)
   const onStepChange = (step: number) => {
-    if (step < currentStep) {
-      // dozvoli nazad bez uvjeta
-      window.scrollTo(0, 0)  // skrolaj na vrh kad ide nazad
-
-      setCurrentStep(step)
-      return
-    }
-    // Spriječi prelazak na sljedeći korak ako nije validno
-    if (!isStepValid(currentStep)) {
-      alert('Molimo ispunite trenutni korak prije nego nastavite.')
-      return
+    if (step === 4) {
+      if (!isStepValid(3)) {
+        alert('Molimo odgovorite na sva pitanja prije nego nastavite.')
+        return
+      }
+      const p = calculatePersonality({
+        hobby,
+        reactionToNotKnowing,
+        helpingBehavior,
+        inventionIdea,
+        routineImportance,
+      })
+      setPersonality(p)
+      setSubmitted(true)
+      generatePDF(name, `${p.name}\n\n${p.description}`)
+      setShowWhatsApp(true)
+    } else {
+      setShowWhatsApp(false)
     }
     setCurrentStep(step)
-    window.scrollTo(0, 0) // skrolaj na vrh kad ide naprijed
-
+    window.scrollTo(0, 0)
   }
 
-  // Funkcija koja se poziva samo na zadnjem koraku kada korisnik klikne "Complete"
   const handleFinalStepComplete = () => {
     if (!isStepValid(3)) {
       alert('Molimo odgovorite na sva pitanja prije dovršetka.')
       return
     }
-    const p = calculatePersonality({
-      hobby,
-      reactionToNotKnowing,
-      helpingBehavior,
-      inventionIdea,
-      routineImportance,
-    })
-    setPersonality(p)
-    setSubmitted(true)
-    generatePDF(name, `${p.name}\n\n${p.description}`)
+    // dodatna logika ako treba
   }
 
   return (
@@ -124,7 +122,7 @@ export default function Home() {
           onStepChange={onStepChange}
           onFinalStepCompleted={handleFinalStepComplete}
           backButtonText="Nazad"
-          nextButtonText={currentStep === 4 ? "Complete" : "Dalje"}
+          nextButtonText="Dalje"
           className="relative space-y-8 sm:space-y-12"
           disableNext={!isStepValid(currentStep)}
         >
@@ -153,7 +151,7 @@ export default function Home() {
           </Step>
 
           <Step>
-            <StepComplete personality={personality} submitted={submitted} name={name} />
+            <StepComplete personality={personality} submitted={submitted} name={name} showWhatsApp={showWhatsApp} />
           </Step>
         </Stepper>
       </div>
