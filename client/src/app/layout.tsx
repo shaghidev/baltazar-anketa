@@ -32,23 +32,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
         {/* Glavni sadržaj */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 10,
-            width: '100%',
-            maxWidth: '960px',
-            minHeight: '100vh',
-            borderRadius: '1rem',
-            padding: '2.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <div className="relative z-10 w-full min-h-screen rounded-lg p-6 flex flex-col justify-center items-center">
           {children}
         </div>
+
+
 
 
       </body>

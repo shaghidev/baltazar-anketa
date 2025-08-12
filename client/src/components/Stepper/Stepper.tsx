@@ -87,12 +87,12 @@ export default function Stepper({
 
   return (
     <div
-      className="flex min-h-full flex-1 flex-col items-center justify-center p-6 sm:aspect-[4/3] md:aspect-[2/1]"
+      className="flex min-h-full flex-1 flex-col items-center justify-center p-0" // maknuo aspect
       {...rest}
     >
       <div
-        className={`mx-auto w-full max-w-5xl rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
-        style={{ border: "1px solid #222" }}
+        className={`mx-auto w-full max-w-0wxl ${stepCircleContainerClassName}`} // povećao max-w
+        
       >
         <div
           className={`${stepContainerClassName} flex w-full items-center p-6 sm:p-8`}
@@ -130,18 +130,18 @@ export default function Stepper({
             );
           })}
         </div>
-
+  
         <StepContentWrapper
           isCompleted={isCompleted}
           currentStep={currentStep}
           direction={direction}
-          className={`space-y-2 px-10 sm:px-16 ${contentClassName}`} // veći padding sa strane
+          className={`space-y-2 px-10 sm:px-20 ${contentClassName}`} // veći padding
         >
           {Children.toArray(children)[currentStep - 1]}
         </StepContentWrapper>
-
+  
         {!isCompleted && (
-          <div className={`px-10 sm:px-16 pb-8 ${footerClassName}`}>
+          <div className={`px-10 sm:px-20 pb-8 ${footerClassName}`}>
             <div
               className={`mt-10 flex ${
                 currentStep !== 1 ? "justify-between" : "justify-end"
@@ -178,6 +178,7 @@ export default function Stepper({
       </div>
     </div>
   );
+  
 }
 
 interface StepContentWrapperProps {
@@ -274,7 +275,7 @@ interface StepProps {
 }
 
 export function Step({ children }: StepProps) {
-  return <div className="px-8">{children}</div>;
+  return <div className="px-1">{children}</div>;
 }
 
 interface StepIndicatorProps {

@@ -123,11 +123,24 @@ export default function Home() {
   };
 
   return (
-<main className="min-h-screen flex items-center justify-center bg-baltazarPurple font-baltazar p-6 sm:p-12">
-  <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl p-10 sm:p-16">
-    <h1 className="text-4xl sm:text-5xl font-extrabold mb-10 sm:mb-16 text-center text-[#0057B7] tracking-wide">
-      Anketa osobnosti
-    </h1>
+    <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full">
+      <div
+        className="
+          relative
+          bg-[url('/images/background1.png')] bg-cover bg-center
+          rounded-3xl shadow-xl
+          w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px]
+          p-4 sm:p-8
+          overflow-hidden
+        "
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
+  
+        {/* Sadržaj */}
+        <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide">
+          Anketa osobnosti
+        </h1>
 
     <Stepper
       initialStep={1}
@@ -135,7 +148,7 @@ export default function Home() {
       onFinalStepCompleted={handleFinalStepComplete}
       backButtonText="Nazad"
       nextButtonText="Dalje"
-      className="space-y-12 sm:space-y-20"
+      className="relative space-y-8 sm:space-y-12"
       disableNext={!isStepValid(currentStep)}
     >
       <Step>
@@ -170,7 +183,6 @@ export default function Home() {
     </Stepper>
   </div>
 </main>
-
 
   );
   }
