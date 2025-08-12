@@ -1,24 +1,15 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Stepper, { Step } from '../components/Stepper/Stepper'
 import StepName from '../components/Stepper/StepName'
 import StepEmail from '../components/Stepper/StepEmail'
 import StepConsent from '../components/Stepper/StepConsent'
-import StepPersonalityQuestions, {
-  FavoriteColor,
-  SocialSituation,
-  PlanFrequency,
-  DecisionStyle,
-  RoutineImportance,
-} from '../components/Stepper/StepPersonalityQuestions'
+import StepPersonalityQuestions from '../components/Stepper/StepPersonalityQuestions'
 import StepComplete from '../components/Stepper/StepComplete'
-
-import usePersonalityForm from '../components/hooks/usePersonalityForm'
-import { PersonalityType, Answers, scoring } from '../components/hooks/scoring'
 import { useGeneratePDF } from '../components/hooks/useGeneratePDF'
-
-type Scoring = typeof scoring;
+import { calculatePersonality } from '../components/hooks/calculatePersonality'
+import { PersonalityType } from '../components/hooks/scoring'
 
 export default function Home() {
   const baltazarImages = [
@@ -26,109 +17,74 @@ export default function Home() {
     "/images/baltazar-step2.png",
     "/images/baltazar-step3.png",
     "/images/baltazar-step4.png",
-  ];
+  ]
 
-  const [currentStep, setCurrentStep] = React.useState(1);
+  const [currentStep, setCurrentStep] = useState(1)
 
-  const {
-    name, setName,
-    email, setEmail,
-    consent, setConsent,
-    favoriteColor, setFavoriteColor,
-    socialSituation, setSocialSituation,
-    planFrequency, setPlanFrequency,
-    decisionStyle, setDecisionStyle,
-    routineImportance, setRoutineImportance,
-    validName,
-    validEmail,
-    validConsent,
-    validFavoriteColor,
-    validSocialSituation,
-    validPlanFrequency,
-    validDecisionStyle,
-    validRoutineImportance,
-    submitted, setSubmitted,
-  } = usePersonalityForm();
+  // Podaci forme
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [consent, setConsent] = useState(false)
 
-  const { generatePDF } = useGeneratePDF();
+  const [hobby, setHobby] = useState('')
+  const [reactionToNotKnowing, setReactionToNotKnowing] = useState('')
+  const [helpingBehavior, setHelpingBehavior] = useState('')
+  const [inventionIdea, setInventionIdea] = useState('')
+  const [routineImportance, setRoutineImportance] = useState('')
 
+  const [personality, setPersonality] = useState<PersonalityType | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
-  // Funkcija za izračun osobnosti na temelju bodova
-  const calculatePersonality = (): PersonalityType => {
-    // Prvo validiraj da su svi odgovori popunjeni
-    if (
-      favoriteColor === '' ||
-      socialSituation === '' ||
-      planFrequency === '' ||
-      decisionStyle === '' ||
-      routineImportance === ''
-    ) {
-      throw new Error('Nisu svi odgovori popunjeni');
-    }
+  const { generatePDF } = useGeneratePDF()
 
-    const totals: Record<PersonalityType, number> = {
-      'Profesor Baltazar': 0,
-      'Izumitelj Amater': 0,
-      'Umjetnik Sanjar': 0,
-      'Pomoćnik iz sjene': 0,
-    };
-
-    const answers: Answers = {
-      favoriteColor,
-      socialSituation,
-      planFrequency,
-      decisionStyle,
-      routineImportance,
-    };
-
-    // Scoring tip
-    const scoringTyped = scoring as Scoring;
-
-    (Object.keys(answers) as (keyof Answers)[]).forEach(key => {
-      const answer = answers[key];
-      const scoreMap = scoringTyped[key];
-      if (!scoreMap) return;
-      const scores = scoreMap[answer];
-      if (scores) {
-        for (const type in scores) {
-          totals[type as PersonalityType] += scores[type as PersonalityType] ?? 0;
-        }
-      }
-    });
-
-    // Nađi osobnost s najvišim rezultatom
-    return Object.entries(totals).reduce((max, curr) =>
-      curr[1] > max[1] ? curr : max
-    )[0] as PersonalityType;
-  };
-
-  const handleFinalStepComplete = () => {
-    if (!validName) return alert('Unesite ime.');
-    if (!validEmail) return alert('Unesite ispravan email.');
-    if (!validConsent) return alert('Morate prihvatiti GDPR uvjete.');
-    if (!validFavoriteColor) return alert('Molimo odaberite omiljenu boju.');
-    if (!validSocialSituation) return alert('Odaberite kako se osjećate u društvenim situacijama.');
-    if (!validPlanFrequency) return alert('Odaberite koliko često planirate aktivnosti.');
-    if (!validDecisionStyle) return alert('Odaberite stil donošenja odluka.');
-    if (!validRoutineImportance) return alert('Odaberite važnost rutine.');
-
-    try {
-      const personality = calculatePersonality();
-      generatePDF(name, personality);
-      setSubmitted(true);
-    } catch {
-      alert('Nisu svi odgovori popunjeni.');
-    }
-  };
-
+  // Validacija po koracima
   const isStepValid = (step: number) => {
     switch (step) {
-      case 1: return validName;
-      case 2: return validEmail && validConsent;
-      case 3: return validFavoriteColor && validSocialSituation && validPlanFrequency && validDecisionStyle && validRoutineImportance;
-      default: return true;
+      case 1:
+        return name.trim().length > 0
+      case 2:
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && consent
+      case 3:
+        return (
+          hobby !== '' &&
+          reactionToNotKnowing !== '' &&
+          helpingBehavior !== '' &&
+          inventionIdea !== ''
+        )
+      default:
+        return true
     }
-  };
+  }
+
+  // Pri promjeni koraka računaj osobnost ako se ide na rezultat (korak 4)
+  const onStepChange = (step: number) => {
+    if ((currentStep === 3 && step === 4) || step === 4) {
+      if (!isStepValid(3)) {
+        alert('Molimo odgovorite na sva pitanja prije nego nastavite.')
+        return
+      }
+      const p = calculatePersonality({
+        hobby,
+        reactionToNotKnowing,
+        helpingBehavior,
+        inventionIdea,
+        routineImportance,
+      })
+      setPersonality(p)
+      setSubmitted(true)
+      generatePDF(name, `${p.name}\n\n${p.description}`)
+    }
+    setCurrentStep(step)
+  }
+
+  // Opcionalna funkcija za finalno dovršavanje (npr. može se koristiti za submit serveru)
+  const handleFinalStepComplete = () => {
+    if (!isStepValid(3)) {
+      alert('Molimo odgovorite na sva pitanja prije dovršetka.')
+      return
+    }
+    // dodatna logika ako treba
+  }
 
   return (
     <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full">
@@ -142,28 +98,23 @@ export default function Home() {
           overflow-hidden
         "
       >
-        {/* Overlay */}
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
-
-        {/* Sadržaj */}
         <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide">
-          Anketa osobnosti
+          Koja je tvoja supermoć iz Baltazargrada?
         </h1>
 
-             {/* Slika Baltazara za trenutni step */}
-             <div className="flex justify-center mb-3">
-             <img
-  src={baltazarImages[currentStep - 1]}
-  alt={`Profesor Baltazar - Step ${currentStep}`}
-  className="w-[150px] h-auto select-none"
-/>
-
+        <div className="flex justify-center mb-3">
+          <img
+            src={baltazarImages[currentStep - 1]}
+            alt={`Profesor Baltazar - Step ${currentStep}`}
+            className="w-[150px] h-auto select-none"
+          />
         </div>
 
         <Stepper
           initialStep={1}
-          onStepChange={setCurrentStep}
+          onStepChange={onStepChange}
           onFinalStepCompleted={handleFinalStepComplete}
           backButtonText="Nazad"
           nextButtonText="Dalje"
@@ -171,37 +122,34 @@ export default function Home() {
           disableNext={!isStepValid(currentStep)}
         >
           <Step>
-            <StepName name={name} setName={setName} valid={validName} />
+            <StepName name={name} setName={setName} valid={isStepValid(1)} />
           </Step>
 
           <Step>
-            <StepEmail email={email} setEmail={setEmail} valid={validEmail} />
-            <StepConsent consent={consent} setConsent={setConsent} valid={validConsent} />
+            <StepEmail email={email} setEmail={setEmail} valid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)} />
+            <StepConsent consent={consent} setConsent={setConsent} valid={consent} />
           </Step>
 
           <Step>
             <StepPersonalityQuestions
-              q1={favoriteColor} setQ1={setFavoriteColor}
-              q2={socialSituation} setQ2={setSocialSituation}
-              q3={planFrequency} setQ3={setPlanFrequency}
-              q4={decisionStyle} setQ4={setDecisionStyle}
-              q5={routineImportance} setQ5={setRoutineImportance}
-              validations={{
-                validQ1: validFavoriteColor,
-                validQ2: validSocialSituation,
-                validQ3: validPlanFrequency,
-                validQ4: validDecisionStyle,
-                validQ5: validRoutineImportance,
-              }}
+              hobby={hobby}
+              setHobby={setHobby}
+              reactionToNotKnowing={reactionToNotKnowing}
+              setReactionToNotKnowing={setReactionToNotKnowing}
+              helpingBehavior={helpingBehavior}
+              setHelpingBehavior={setHelpingBehavior}
+              inventionIdea={inventionIdea}
+              setInventionIdea={setInventionIdea}
+              routineImportance={routineImportance}
+              setRoutineImportance={setRoutineImportance}
             />
           </Step>
 
           <Step>
-            <StepComplete submitted={submitted} />
+            <StepComplete personality={personality} submitted={submitted} name={name} />
           </Step>
         </Stepper>
       </div>
     </main>
-
-  );
+  )
 }
