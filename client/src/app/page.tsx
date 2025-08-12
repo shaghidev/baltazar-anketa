@@ -56,34 +56,37 @@ export default function Home() {
     }
   }
 
-  // Pri promjeni koraka računaj osobnost ako se ide na rezultat (korak 4)
+  // Na promjenu koraka samo postavi korak, bez generiranja PDF-a
   const onStepChange = (step: number) => {
-    if ((currentStep === 3 && step === 4) || step === 4) {
-      if (!isStepValid(3)) {
-        alert('Molimo odgovorite na sva pitanja prije nego nastavite.')
-        return
-      }
-      const p = calculatePersonality({
-        hobby,
-        reactionToNotKnowing,
-        helpingBehavior,
-        inventionIdea,
-        routineImportance,
-      })
-      setPersonality(p)
-      setSubmitted(true)
-      generatePDF(name, `${p.name}\n\n${p.description}`)
+    if (step < currentStep) {
+      // dozvoli nazad bez uvjeta
+      setCurrentStep(step)
+      return
+    }
+    // Spriječi prelazak na sljedeći korak ako nije validno
+    if (!isStepValid(currentStep)) {
+      alert('Molimo ispunite trenutni korak prije nego nastavite.')
+      return
     }
     setCurrentStep(step)
   }
 
-  // Opcionalna funkcija za finalno dovršavanje (npr. može se koristiti za submit serveru)
+  // Funkcija koja se poziva samo na zadnjem koraku kada korisnik klikne "Complete"
   const handleFinalStepComplete = () => {
     if (!isStepValid(3)) {
       alert('Molimo odgovorite na sva pitanja prije dovršetka.')
       return
     }
-    // dodatna logika ako treba
+    const p = calculatePersonality({
+      hobby,
+      reactionToNotKnowing,
+      helpingBehavior,
+      inventionIdea,
+      routineImportance,
+    })
+    setPersonality(p)
+    setSubmitted(true)
+    generatePDF(name, `${p.name}\n\n${p.description}`)
   }
 
   return (
@@ -117,7 +120,7 @@ export default function Home() {
           onStepChange={onStepChange}
           onFinalStepCompleted={handleFinalStepComplete}
           backButtonText="Nazad"
-          nextButtonText="Dalje"
+          nextButtonText={currentStep === 4 ? "Complete" : "Dalje"}
           className="relative space-y-8 sm:space-y-12"
           disableNext={!isStepValid(currentStep)}
         >
