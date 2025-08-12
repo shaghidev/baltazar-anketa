@@ -38,18 +38,18 @@ export default function StepPersonalityQuestions({
       <legend className="text-2xl font-extrabold mb-6 text-[#0057B7] drop-shadow-md">
         {title}
       </legend>
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2">
         {options.map(({ label, value: optionValue }) => (
           <label
             key={optionValue}
             className={`
-              flex items-center p-5 rounded-3xl border-2 cursor-pointer select-none
+              flex items-center p-3 rounded-3xl border- cursor-pointer select-none
               transition-all duration-300 ease-in-out
               shadow-sm
               ${
                 value === optionValue
-                  ? 'bg-yellow-100 border-yellow-400 scale-[1.05] shadow-lg'
-                  : 'bg-white border-gray-300 hover:border-yellow-400 hover:shadow-md hover:scale-[1.02]'
+                  ? 'bg-yellow-100 border-yellow-400 scale-[1.01] shadow-lg'
+                  : 'bg-white border-gray-300 hover:border-yellow-400 hover:shadow-md hover:scale-[1.01]'
               }
             `}
           >
@@ -61,7 +61,7 @@ export default function StepPersonalityQuestions({
               onChange={() => setValue(optionValue)}
               className="hidden"
             />
-            <span className="text-lg font-semibold text-gray-800">{label}</span>
+            <span className="text-3px font-medium text-gray-800">{label}</span>
           </label>
         ))}
       </div>
@@ -69,7 +69,7 @@ export default function StepPersonalityQuestions({
   )
 
   return (
-    <div className="p-8 mx-auto">
+    <div className="p-0 mx-auto">
 
 
       {renderQuestion(
