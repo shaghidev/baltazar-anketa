@@ -20,11 +20,9 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
   }
 
   return (
-    <div className="flex flex-col items-center p-6 max-w-md mx-auto relative  ">
-      <h2 className="text-3xl font-bold mb-4 text-center text-[#0057B7]">
-        Tvoja supermoć iz Baltazargrada je:
-      </h2>
-      <h3 className="text-2xl text-blue-700 font-semibold mb-6 text-center">{personality.name}</h3>
+    <div className="flex flex-col items-center p-6 max-w-md mx-auto relative  rounded-xl ">
+
+      <h2 className="text-5xl text-[#205c13] font-semibold mb-6 text-center">{personality.name}</h2>
       <p className="text-gray-800 whitespace-pre-line mb-12 text-center leading-relaxed">
         {personality.description}
       </p>

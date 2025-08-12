@@ -118,14 +118,14 @@ export default function Home() {
     <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full relative">
       {/* Konfete preko cijelog ekrana kad je diploma */}
       {submitted && (
-  <Confetti
-    width={width}
-    height={height}
-    recycle={false}
-    numberOfPieces={500}
-    style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }}
-  />
-)}
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={500}
+          style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }}
+        />
+      )}
 
 
       <div
@@ -142,8 +142,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
         <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide z-20">
-          Koja je tvoja supermoć iz Baltazargrada?
-        </h1>
+  {currentStep === 4
+    ? 'Tvoja supermoć iz Baltazargrada je '
+    : 'Koja je tvoja supermoć iz Baltazargrada?'}
+</h1>
+
 
         <div className="flex justify-center mb-3 z-20">
           <img
@@ -191,7 +194,7 @@ export default function Home() {
           </Step>
         </Stepper>
 
-     
+
       </div>
     </main>
   )
