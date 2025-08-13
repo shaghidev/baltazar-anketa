@@ -101,8 +101,16 @@ export default function Home() {
         body: JSON.stringify(data),
       })
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Greška pri slanju podataka')
+        const contentType = response.headers.get("content-type");
+        let errorMessage = `Greška ${response.status}`;
+        if (contentType?.includes("application/json")) {
+          const { error } = await response.json();
+          errorMessage = error || errorMessage;
+        } else {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+        throw new Error(errorMessage);
       }
       return await response.json()
     } catch (error: any) {
@@ -110,6 +118,7 @@ export default function Home() {
       throw error
     }
   }
+  
 
   const handleFinalStepComplete = async () => {
     if (!isStepValid(3)) {
