@@ -20,7 +20,7 @@
 # production
 /build
 
-# misc
+# miscxq
 .DS_Store
 *.pem
 

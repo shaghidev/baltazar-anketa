@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Stepper, { Step } from '../components/Stepper/Stepper'
 import StepName from '../components/Stepper/StepName'
 import StepEmail from '../components/Stepper/StepEmail'
@@ -32,7 +33,6 @@ export default function Home() {
   const [reactionToNotKnowing, setReactionToNotKnowing] = useState('')
   const [helpingBehavior, setHelpingBehavior] = useState('')
   const [inventionIdea, setInventionIdea] = useState('')
-  const [routineImportance, setRoutineImportance] = useState('')
 
   const [personality, setPersonality] = useState<PersonalityType | null>(null)
   const [submitted, setSubmitted] = useState(false)
@@ -41,7 +41,6 @@ export default function Home() {
   const { generatePDF } = useGeneratePDF()
   const { width, height } = useWindowSize()
 
-  // Play audio kad se prikazuju konfete (diploma)
   useEffect(() => {
     if (submitted) {
       const audio = new Audio('/sounds/confetti-sound.mp3')
@@ -49,7 +48,6 @@ export default function Home() {
     }
   }, [submitted])
 
-  // Validacija po koracima
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
@@ -79,7 +77,6 @@ export default function Home() {
         reactionToNotKnowing,
         helpingBehavior,
         inventionIdea,
-        routineImportance,
       })
       setPersonality(p)
       setSubmitted(true)
@@ -93,13 +90,13 @@ export default function Home() {
   }
 
   async function sendDataToBackend(data: { name: string; email: string; consent: boolean }) {
-    console.log('Šaljem podatke na backend:', data)
     try {
-      const response = await fetch('http://localhost:3001/api/submit', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+
       if (!response.ok) {
         const contentType = response.headers.get("content-type");
         let errorMessage = `Greška ${response.status}`;
@@ -112,13 +109,18 @@ export default function Home() {
         }
         throw new Error(errorMessage);
       }
+
       return await response.json()
-    } catch (error: any) {
-      console.error('Greška:', error)
-      throw error
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Greška:', error.message)
+        throw error
+      } else {
+        console.error('Nepoznata greška:', error)
+        throw new Error('Nepoznata greška')
+      }
     }
   }
-  
 
   const handleFinalStepComplete = async () => {
     if (!isStepValid(3)) {
@@ -136,7 +138,6 @@ export default function Home() {
       reactionToNotKnowing,
       helpingBehavior,
       inventionIdea,
-      routineImportance,
     })
 
     setPersonality(p)
@@ -147,8 +148,12 @@ export default function Home() {
     try {
       const result = await sendDataToBackend({ name, email, consent })
       console.log('Backend je odgovorio:', result)
-    } catch (error: any) {
-      alert('Došlo je do problema sa slanjem podataka: ' + error.message)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert('Došlo je do problema sa slanjem podataka: ' + error.message)
+      } else {
+        alert('Došlo je do neočekivane greške')
+      }
     }
   }
 
@@ -164,17 +169,7 @@ export default function Home() {
         />
       )}
 
-      <div
-        className="
-          relative
-          bg-[url('/images/background1.png')] bg-cover bg-center
-          rounded-3xl shadow-xl
-          w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px]
-          p-4 sm:p-8
-          overflow-hidden
-          z-10
-        "
-      >
+      <div className="relative bg-[url('/images/background1.png')] bg-cover bg-center rounded-3xl shadow-xl w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px] p-4 sm:p-8 overflow-hidden z-10">
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
         <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide z-20">
@@ -184,10 +179,12 @@ export default function Home() {
         </h1>
 
         <div className="flex justify-center mb-3 z-20">
-          <img
+          <Image
             src={baltazarImages[currentStep - 1]}
             alt={`Profesor Baltazar - Step ${currentStep}`}
-            className="w-[150px] h-auto select-none"
+            width={150}
+            height={150}
+            className="select-none"
           />
         </div>
 

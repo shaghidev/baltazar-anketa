@@ -6,7 +6,6 @@ interface Answers {
   reactionToNotKnowing: string
   helpingBehavior: string
   inventionIdea: string
-  routineImportance: string
 }
 
 export function calculatePersonality(answers: Answers): PersonalityType {
