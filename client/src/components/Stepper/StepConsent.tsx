@@ -39,7 +39,7 @@ export default function StepConsent({ consent, setConsent, valid }: StepConsentP
       </label>
       {!valid && (
         <p className="text-red-600 text-sm italic ml-9">
-          Morate prihvatiti GDPR uvjete.
+          Prihvatite GDPR uvjete.
         </p>
       )}
     </div>

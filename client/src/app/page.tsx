@@ -146,7 +146,7 @@ export default function Home() {
     setPersonality(p)
     setSubmitted(true)
     setShowWhatsApp(true)
-    generatePDF(name, `${p.name}\n\n${p.description}`)
+    generatePDF(name, p.key)
 
     try {
       const result = await sendDataToBackend({ name, email, consent })

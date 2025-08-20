@@ -1,62 +1,57 @@
 'use client'
-import { jsPDF } from 'jspdf'
+
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PERSONALITY_TYPES } from '../hooks/scoring'
 
 export function useGeneratePDF() {
-  const generatePDF = (name: string, personality: string) => {
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'pt',
-      format: 'a4',
-    })
+  const generatePDF = async (name: string, personalityKey: string) => {
+    try {
+      const personality = PERSONALITY_TYPES[personalityKey]
+      if (!personality) throw new Error("Nepoznat tip osobnosti")
 
-    // Pozadinski okvir s tankim zlatnim borderom
-    doc.setDrawColor(205, 170, 125) // zlatna boja
-    doc.setLineWidth(4)
-    doc.rect(20, 20, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 40)
+      // Učitaj PDF template iz public foldera
+      const existingPdfBytes = await fetch(personality.template).then(res => {
+        if (!res.ok) throw new Error(`PDF not found: ${personality.template}`)
+        return res.arrayBuffer()
+      })
 
-    // Naslov diplome
-    doc.setFont('times', 'bolditalic')
-    doc.setFontSize(48)
-    doc.setTextColor(102, 51, 0) // tamno smeđa
-    doc.text('Diploma o osobnosti', doc.internal.pageSize.width / 2, 100, { align: 'center' })
+      const pdfDoc = await PDFDocument.load(existingPdfBytes)
+      const pages = pdfDoc.getPages()
+      const firstPage = pages[0]
+      const { width, height } = firstPage.getSize()
 
-    // Horizontalna linija ispod naslova
-    doc.setDrawColor(205, 170, 125)
-    doc.setLineWidth(1)
-    doc.line(100, 120, doc.internal.pageSize.width - 100, 120)
+      // Embed font
+      const font = await pdfDoc.embedFont(StandardFonts.TimesRomanBold)
 
-    // Ime osobe
-    doc.setFont('times', 'normal')
-    doc.setFontSize(28)
-    doc.setTextColor(0, 0, 0)
-    doc.text(`Dodjeljuje se:`, doc.internal.pageSize.width / 2, 180, { align: 'center' })
+      // Dodaj samo ime
+      firstPage.drawText(name, {
+        x: 150,
+        y: 370,
+        size: 36,
+        font,
+        color: rgb(0, 0, 0),
+      })
 
-    doc.setFont('times', 'bold')
-    doc.setFontSize(36)
-    doc.text(name, doc.internal.pageSize.width / 2, 220, { align: 'center' })
+      // Datum
+      const today = new Date().toLocaleDateString()
+      firstPage.drawText(`${today}`, {
+        x: 40,
+        y: 55,
+        size: 16,
+        font,
+        color: rgb(0, 0, 0),
+      })
 
-    // Tip osobnosti
-    doc.setFont('times', 'italic')
-    doc.setFontSize(24)
-    doc.text(`za dokazivanje osobnosti tipa:`, doc.internal.pageSize.width / 2, 280, { align: 'center' })
-
-    doc.setFont('times', 'bolditalic')
-    doc.setFontSize(30)
-    doc.setTextColor(102, 51, 0)
-    doc.text(personality, doc.internal.pageSize.width / 2, 320, { align: 'center' })
-
-    // Datum i potpis (mjesto za potpis)
-    const today = new Date().toLocaleDateString()
-    doc.setFont('times', 'normal')
-    doc.setFontSize(16)
-    doc.setTextColor(50, 50, 50)
-    doc.text(`Datum: ${today}`, 60, doc.internal.pageSize.height - 80)
-
-    doc.text('____________________', doc.internal.pageSize.width - 160, doc.internal.pageSize.height - 80)
-    doc.text('Potpis', doc.internal.pageSize.width - 130, doc.internal.pageSize.height - 60)
-
-    // Spremi PDF
-    doc.save(`diploma-${name}.pdf`)
+      // Spremi PDF u browseru
+      const pdfBytes = await pdfDoc.save()
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `diploma-${name}.pdf`
+      link.click()
+    } catch (error: unknown) {
+      console.error("❌ Greška pri generiranju PDF-a:", error)
+    }
   }
 
   return { generatePDF }

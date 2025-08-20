@@ -9,19 +9,20 @@ interface Answers {
 }
 
 export function calculatePersonality(answers: Answers): PersonalityType {
-  // Brojač po tipu
+  // Brojač po tipu (samo postojeći tipovi)
   const tally: Record<string, number> = {
     knowledge: 0,
-    kindness: 0,
     creativity: 0,
     curiosity: 0,
   }
 
-  // Zbrajamo po odgovoru, ignoriramo rutinu za sada
-  tally[answers.hobby]++
-  tally[answers.reactionToNotKnowing]++
-  tally[answers.helpingBehavior]++
-  tally[answers.inventionIdea]++
+  // Zbrajamo po odgovoru, ignoriramo nepostojeće tipove
+  const answerKeys = [answers.hobby, answers.reactionToNotKnowing, answers.helpingBehavior, answers.inventionIdea]
+  answerKeys.forEach(key => {
+    if (tally[key] !== undefined) {
+      tally[key]++
+    }
+  })
 
   // Pronađi tip s najviše bodova
   let maxType = "knowledge"

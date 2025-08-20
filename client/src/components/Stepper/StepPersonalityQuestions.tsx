@@ -90,22 +90,22 @@ export default function StepPersonalityQuestions({
         reactionToNotKnowing,
         setReactionToNotKnowing,
         [
-          { label: 'Želim odmah saznati kako to funkcionira', value: 'knowledge' },
+          { label: 'Odmah krećem istraživati samostalno', value: 'knowledge' },
           { label: 'Tražim nekoga tko mi može pomoći ili objasniti', value: 'kindness' },
           { label: 'Razmišljam kako bih mogao to riješiti na drugačiji, originalan način', value: 'creativity' },
-          { label: 'Pitam mnogo pitanja i želim sve istražiti do kraja', value: 'curiosity' },
+          { label: 'Pitam mnogo pitanja kako bih zaključio odgovor', value: 'curiosity' },
         ]
       )}
 
       {renderQuestion(
-        '3. Kada vidiš nekoga kako pati, što najčešće napraviš?',
+        '3. Kada prijatelj ima problem ili izazov i tužan je, što najčešće napraviš? ',
         'helpingBehavior',
         helpingBehavior,
         setHelpingBehavior,
         [
-          { label: 'Pokušam naučiti što mu je potrebno da mu pomognem', value: 'knowledge' },
+          { label: 'Pokušam saznati što mu je potrebno da mu pomognem', value: 'knowledge' },
           { label: 'Pružim mu prijateljsku riječ ili zagrljaj', value: 'kindness' },
-          { label: 'Osmislim zabavan način da mu popravim dan', value: 'creativity' },
+          { label: 'Pokušam ga nasmijati', value: 'creativity' },
           { label: 'Pitam zašto se to dogodilo i želim spriječiti da se ponovi', value: 'curiosity' },
         ]
       )}
