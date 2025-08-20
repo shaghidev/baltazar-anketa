@@ -1,51 +1,92 @@
+'use strict';
+require('dotenv').config(); // za pohranu osjetljivih podataka u .env
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+const helmet = require('helmet'); // sigurnosni headeri
+const rateLimit = require('express-rate-limit'); // limitiranje zahtjeva
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const xss = require('xss'); // za sanitizaciju inputa
+const validator = require('validator'); // validacija emaila
 
 const app = express();
-const PORT = 3001;
 
-app.use(cors()); // dopušta sve domene
+const dotenv = require('dotenv');
 
-app.use(express.json());
+const envFile = process.env.NODE_ENV === 'prod' 
+  ? '.env.prod' 
+  : '.env.dev';
 
-const submissionsPath = path.join(__dirname, 'submissions.json');
+dotenv.config({ path: envFile });
 
-// Ako fajl ne postoji ili je prazan, inicijaliziraj praznim nizom
-if (!fs.existsSync(submissionsPath) || fs.readFileSync(submissionsPath, 'utf-8').trim() === '') {
-  fs.writeFileSync(submissionsPath, JSON.stringify([]));
+const PORT = process.env.PORT || 3001;
+
+// ----- SECURITY MIDDLEWARES -----
+app.use(helmet());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || '*', // ograniči na tvoju frontend domenu
+}));
+app.use(express.json({ limit: '10kb' })); // limitiraj veličinu tijela zahtjeva
+
+// Rate limiter: max 100 zahtjeva po 15 minuta po IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Previše zahtjeva, pokušajte kasnije.',
+});
+app.use(limiter);
+
+// ----- MONGO DB -----
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri, {
+  serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true }
+});
+
+let submissionsCollection;
+
+async function initMongo() {
+  try {
+    await client.connect();
+    const db = client.db('baltazar-anketa');
+    submissionsCollection = db.collection('submissions');
+    console.log('MongoDB spojen i kolekcija spremna');
+  } catch (err) {
+    console.error('Greška pri spajanju na MongoDB:', err);
+    process.exit(1); // prekini server ako ne može spojiti DB
+  }
 }
+initMongo();
 
-// Test ruta
+// ----- TEST ROUTE -----
 app.get('/', (req, res) => res.send('Backend radi'));
 
-// Ruta za primanje podataka
-app.post('/api/submit', (req, res) => {
+// ----- POST /api/submit -----
+app.post('/api/submit', async (req, res) => {
   try {
-    const { name, email, consent } = req.body;
+    let { name, email, consent } = req.body;
 
+    // Sanitizacija inputa
+    name = xss(name?.trim());
+    email = xss(email?.trim());
+
+    // Validacija
     if (!name || !email || consent !== true) {
       return res.status(400).json({ error: 'Nedostaju podaci ili nije dano dopuštenje' });
     }
 
-    let submissions = [];
-    try {
-      const content = fs.readFileSync(submissionsPath, 'utf-8');
-      submissions = content ? JSON.parse(content) : [];
-    } catch (err) {
-      console.error('Greška pri čitanju submissions.json, koristim prazan niz.', err);
-      submissions = [];
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ error: 'Neispravan email' });
     }
 
-    submissions.push({ name, email, consent, timestamp: new Date().toISOString() });
+    const submission = {
+      name,
+      email,
+      consent,
+      timestamp: new Date(),
+      ip: req.ip, // pohrana IP adrese
+    };
 
-    try {
-      fs.writeFileSync(submissionsPath, JSON.stringify(submissions, null, 2));
-    } catch (err) {
-      console.error('Greška pri zapisivanju submissions.json:', err);
-      return res.status(500).json({ error: 'Ne mogu spremiti podatke na server.' });
-    }
+    // Spremanje u MongoDB
+    await submissionsCollection.insertOne(submission);
 
     res.json({ message: 'Podaci su spremljeni' });
   } catch (error) {
@@ -54,4 +95,5 @@ app.post('/api/submit', (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server radi na http://localhost:${PORT}`));
+// ----- START SERVER -----
+app.listen(PORT, () => console.log(`Server radi na portu ${PORT}`));
