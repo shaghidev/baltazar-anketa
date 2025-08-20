@@ -96,6 +96,8 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+      
+    
 
       if (!response.ok) {
         const contentType = response.headers.get("content-type");

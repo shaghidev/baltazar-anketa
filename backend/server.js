@@ -1,99 +1,60 @@
-'use strict';
-require('dotenv').config(); // za pohranu osjetljivih podataka u .env
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet'); // sigurnosni headeri
-const rateLimit = require('express-rate-limit'); // limitiranje zahtjeva
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const xss = require('xss'); // za sanitizaciju inputa
-const validator = require('validator'); // validacija emaila
+import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+
+dotenv.config();
 
 const app = express();
 
-const dotenv = require('dotenv');
+// 🟢 Trust proxy za Render i X-Forwarded-For
+app.set('trust proxy', 1);
 
-const envFile = process.env.NODE_ENV === 'prod' 
-  ? '.env.prod' 
-  : '.env.dev';
-
-dotenv.config({ path: envFile });
-
-const PORT = process.env.PORT || 3001;
-
-// ----- SECURITY MIDDLEWARES -----
+// 🟢 Middleware
+app.use(express.json());
 app.use(helmet());
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || '*', // ograniči na tvoju frontend domenu
-}));
-app.use(express.json({ limit: '10kb' })); // limitiraj veličinu tijela zahtjeva
 
-// Rate limiter: max 100 zahtjeva po 15 minuta po IP
+// 🟢 CORS - koristi ALLOWED_ORIGIN iz env
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN,
+  credentials: true,
+}));
+
+// 🟢 Rate limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Previše zahtjeva, pokušajte kasnije.',
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: 100, // max 100 requests po IP
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
-// ----- MONGO DB -----
-const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri, {
-  serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true }
-});
+// 🟢 MongoDB connect
+const mongoUri = process.env.MONGO_URI;
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('Greška pri spajanju na MongoDB:', err));
 
-let submissionsCollection;
-
-async function initMongo() {
-  try {
-    await client.connect();
-    const db = client.db('baltazar-anketa');
-    submissionsCollection = db.collection('submissions');
-    console.log('MongoDB spojen i kolekcija spremna');
-  } catch (err) {
-    console.error('Greška pri spajanju na MongoDB:', err);
-    process.exit(1); // prekini server ako ne može spojiti DB
-  }
-}
-initMongo();
-
-// ----- TEST ROUTE -----
-app.get('/', (req, res) => res.send('Backend radi'));
-
-// ----- POST /api/submit -----
+// 🟢 Primjer API endpointa
 app.post('/api/submit', async (req, res) => {
+  const { name, email, consent } = req.body;
   try {
-    let { name, email, consent } = req.body;
-
-    // Sanitizacija inputa
-    name = xss(name?.trim());
-    email = xss(email?.trim());
-
-    // Validacija
-    if (!name || !email || consent !== true) {
-      return res.status(400).json({ error: 'Nedostaju podaci ili nije dano dopuštenje' });
-    }
-
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ error: 'Neispravan email' });
-    }
-
-    const submission = {
-      name,
-      email,
-      consent,
-      timestamp: new Date(),
-      ip: req.ip, // pohrana IP adrese
-    };
-
-    // Spremanje u MongoDB
-    await submissionsCollection.insertOne(submission);
-
-    res.json({ message: 'Podaci su spremljeni' });
-  } catch (error) {
-    console.error('Greška na serveru:', error);
-    res.status(500).json({ error: 'Došlo je do greške na serveru.' });
+    // Tu ide logika spremanja u bazu
+    console.log('Primljeni podaci:', { name, email, consent });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Greška na serveru' });
   }
 });
 
-// ----- START SERVER -----
-app.listen(PORT, () => console.log(`Server radi na portu ${PORT}`));
+// 🟢 Start servera
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server radi na portu ${PORT}`);
+});
