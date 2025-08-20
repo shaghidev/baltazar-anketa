@@ -18,7 +18,6 @@ export function useGeneratePDF() {
       const pdfDoc = await PDFDocument.load(existingPdfBytes)
       const pages = pdfDoc.getPages()
       const firstPage = pages[0]
-      const { width, height } = firstPage.getSize()
 
       // Embed font
       const font = await pdfDoc.embedFont(StandardFonts.TimesRomanBold)
@@ -42,13 +41,14 @@ export function useGeneratePDF() {
         color: rgb(0, 0, 0),
       })
 
-      // Spremi PDF u browseru
       const pdfBytes = await pdfDoc.save()
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      // pdfBytes je Uint8Array, ali Blob želi ArrayBuffer
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = `diploma-${name}.pdf`
       link.click()
+      
     } catch (error: unknown) {
       console.error("❌ Greška pri generiranju PDF-a:", error)
     }
