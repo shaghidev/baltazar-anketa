@@ -9,9 +9,11 @@ interface StepCompleteProps {
   submitted: boolean
   name: string
   showWhatsApp: boolean
+  email: string
 }
 
-export default function StepComplete({ personality, submitted, name, showWhatsApp }: StepCompleteProps) {
+
+export default function StepComplete({ personality, submitted, name, showWhatsApp, email }: StepCompleteProps) {
   const { generatePDF } = useGeneratePDF()
 
   if (!submitted) {
@@ -23,12 +25,24 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
   }
 
   const handleWhatsAppClick = async () => {
-    // 1. Skinuti PDF
-    await generatePDF(name, personality.key)
-
-    // 2. Otvoriti WhatsApp grupu
-    window.open('https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N', '_blank')
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-diploma`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, personalityKey: personality.key })
+      })
+      
+      const data = await res.json()
+      console.log(data)
+  
+      window.open('https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N', '_blank')
+    } catch (err) {
+      console.error('Greška slanja diplome', err)
+    }
   }
+  
+  
+
 
   return (
     <div className="flex flex-col items-center p-0 sm:p-8 max-w-full mx-auto relative rounded-xl">

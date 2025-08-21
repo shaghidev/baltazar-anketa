@@ -228,6 +228,8 @@ export default function Home() {
               submitted={submitted}
               name={name}
               showWhatsApp={showWhatsApp}
+                email={email}
+
             />
           </Step>
         </Stepper>

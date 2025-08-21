@@ -41,13 +41,19 @@ export function useGeneratePDF() {
         color: rgb(0, 0, 0),
       })
 
+      // **Spremi PDF**
       const pdfBytes = await pdfDoc.save()
-      // pdfBytes je Uint8Array, ali Blob želi ArrayBuffer
-      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+
+      // Pretvori u ArrayBuffer kompatibilan s Blob
+      const arrayBuffer = pdfBytes.buffer instanceof ArrayBuffer ? pdfBytes.buffer : pdfBytes.slice().buffer
+      
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = `diploma-${name}.pdf`
+      document.body.appendChild(link)
       link.click()
+      link.remove()
       
     } catch (error: unknown) {
       console.error("❌ Greška pri generiranju PDF-a:", error)
