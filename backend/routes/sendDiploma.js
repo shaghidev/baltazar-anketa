@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
 		firstPage.drawText(name, {
 			x: xCoordinate,
 			y: 370,
-			size: fontSizes,
+			size: fontSize,
 			font,
 			color: rgb(0, 0, 0),
 		});
