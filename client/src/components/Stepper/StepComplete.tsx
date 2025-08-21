@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { PersonalityType } from '../hooks/scoring'
-import { useGeneratePDF } from '../hooks/useGeneratePDF'
 
 interface StepCompleteProps {
   personality: PersonalityType | null
@@ -13,7 +12,6 @@ interface StepCompleteProps {
 }
 
 export default function StepComplete({ personality, submitted, name, showWhatsApp, email }: StepCompleteProps) {
-  const { generatePDF } = useGeneratePDF()
 
   if (!submitted) {
     return <p className="text-center text-gray-600">Molimo dovršite kviz da vidite rezultate.</p>

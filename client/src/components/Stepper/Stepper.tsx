@@ -78,12 +78,7 @@ export default function Stepper({
     }
   };
 
-  const handleComplete = () => {
-    if (!disableNext) {
-      setDirection(1);
-      updateStep(totalSteps + 1);
-    }
-  };
+
 
   return (
     <div

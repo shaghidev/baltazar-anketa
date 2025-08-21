@@ -2,6 +2,7 @@
 
 import React from 'react'
 
+// Props za komponentu
 interface StepNameProps {
   name: string
   setName: (value: string) => void
@@ -9,13 +10,19 @@ interface StepNameProps {
 }
 
 export default function StepName({ name, setName, valid }: StepNameProps) {
+  // Funkcija za sanitizaciju inputa: dozvoljava samo slova, razmake i crtice
+  const handleChange = (value: string) => {
+    const sanitized = value.replace(/[^a-zA-Z\s\-čćžšđČĆŽŠĐ]/g, '')
+    setName(sanitized)
+  }
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <label className="text-lg font-semibold text-[#0057B7]">Ime</label>
       <input
         type="text"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={e => handleChange(e.target.value)}
         placeholder="Unesite ime"
         className={`w-full rounded-xl border-2 p-3 text-gray-900 placeholder-gray-400
           transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-1
@@ -25,6 +32,7 @@ export default function StepName({ name, setName, valid }: StepNameProps) {
               : 'border-red-500 focus:ring-red-400 focus:border-red-500'
           }`}
       />
+      {/* Rezervirano mjesto za poruku validacije da input ne skače */}
       <div className="min-h-[1.25rem]">
         {!valid && <p className="text-red-600 text-sm italic">Ime je obavezno.</p>}
       </div>
