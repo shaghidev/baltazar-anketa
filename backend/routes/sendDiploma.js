@@ -4,8 +4,7 @@ import path from 'path';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import nodemailer from 'nodemailer';
 import fontkit from '@pdf-lib/fontkit';
-import { createCanvas, loadImage } from 'canvas';
-import pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+import { fromPath } from 'pdf2pic';
 
 const router = express.Router();
 
@@ -17,15 +16,20 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Nedostaju obavezni podaci: name, email ili personalityKey' });
     }
 
+    // 1️⃣ Učitaj personality tipove iz JSON-a
     const jsonPath = path.join(process.cwd(), 'config', 'personalities.json');
+    if (!fs.existsSync(jsonPath)) return res.status(500).json({ error: 'Datoteka personalities.json ne postoji' });
+
     const personalityData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
     const personality = personalityData.find(p => p.key === personalityKey);
     if (!personality) return res.status(404).json({ error: 'Nepoznat personalityKey' });
 
     const templatePath = path.join(process.cwd(), 'public', personality.template);
+    if (!fs.existsSync(templatePath)) return res.status(404).json({ error: 'Template PDF ne postoji' });
+
     const existingPdfBytes = fs.readFileSync(templatePath);
 
-    
+    // 2️⃣ Učitaj PDF i embed font
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     pdfDoc.registerFontkit(fontkit);
     const pages = pdfDoc.getPages();
@@ -38,23 +42,26 @@ router.post('/', async (req, res) => {
     firstPage.drawText(formattedDate, { x: 40, y: 55, size: 16, font, color: rgb(0, 0, 0) });
 
     const pdfBytes = await pdfDoc.save();
-    const tmpPdfPath = path.join(process.cwd(), 'tmp', `temp-${name}.pdf`);
-    if (!fs.existsSync(path.dirname(tmpPdfPath))) fs.mkdirSync(path.dirname(tmpPdfPath));
+
+    // 3️⃣ Spremi privremeni PDF
+    const tmpDir = path.join(process.cwd(), 'tmp');
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+    const tmpPdfPath = path.join(tmpDir, `temp-${name}.pdf`);
     fs.writeFileSync(tmpPdfPath, pdfBytes);
 
- 
-    const loadingTask = pdfjsLib.getDocument(tmpPdfPath);
-    const pdf = await loadingTask.promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 2 });
+    // 4️⃣ Pretvori PDF u PNG
+    const converter = fromPath(tmpPdfPath, {
+      density: 150,
+      saveFilename: `temp-${name}`,
+      savePath: tmpDir,
+      format: 'png',
+      width: 600,
+      height: 800,
+    });
+    const pageImage = await converter(1);
+    const imageBase64 = fs.readFileSync(pageImage.path).toString('base64');
 
-    const canvas = createCanvas(viewport.width, viewport.height);
-    const context = canvas.getContext('2d');
-
-    await page.render({ canvasContext: context, viewport }).promise;
-    const imageBase64 = canvas.toDataURL('image/png').split(',')[1]; // samo base64 dio
-
-    // 3️⃣ Pošalji email
+    // 5️⃣ Pošalji email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '465'),
@@ -84,7 +91,10 @@ router.post('/', async (req, res) => {
       ],
     });
 
+    // 6️⃣ Očisti privremene fajlove
     fs.unlinkSync(tmpPdfPath);
+    fs.unlinkSync(pageImage.path);
+
     console.log(`Diploma poslana: ${name} (${email}) - ${personality.name}`);
     res.json({ success: true, message: `Diploma poslana za ${name}!` });
 
