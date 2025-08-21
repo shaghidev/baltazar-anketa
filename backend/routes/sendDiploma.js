@@ -75,15 +75,31 @@ router.post('/', async (req, res) => {
       subject: `Tvoja diploma iz Baltazargrada - ${personality.name}`,
       text: `Hej ${name}, tvoja supermoć je ${personality.name}!\n\n${personality.description}`,
       html: `
-        <p>Hej <b>${name}</b>,</p>
-        <p>Tvoja supermoć je <b>${personality.name}</b>!</p>
-        <p>${personality.description}</p>
-        <p>Diploma je u privitku.</p>
+        <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f7f7f7; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color:#333; text-align:center;">Čestitamo, ${name}!</h2>
+          <h3 style="color:#007acc; text-align:center;">Tvoja supermoć: ${personality.name}</h3>
+          <p style="font-size:16px; color:#555; line-height:1.5; text-align:center;">${personality.description}</p>
+    
+          <div style="text-align:center; margin-top:30px;">
+            <p style="font-weight:bold; color:#333;">Tvoja diploma je u privitku 📎</p>
+            <p style="font-size:14px; color:#777;">Možeš ju preuzeti ili otvoriti kao PDF.</p>
+          </div>
+    
+          <footer style="text-align:center; margin-top:40px; font-size:12px; color:#aaa;">
+            © ${new Date().getFullYear()} Baltazar Kviz
+          </footer>
+        </div>
       `,
       attachments: [
-        { filename: `diploma-${safeName}.pdf`, content: pdfBytes, contentType: 'application/pdf' }
+        {
+          filename: `diploma-${safeName}.pdf`,
+          content: pdfBytes,
+          contentType: 'application/pdf',
+        }
       ],
     });
+    
+    
 
     console.log(`Diploma poslana: ${name} (${email}) - ${personality.name}`);
     res.json({ success: true, message: `Diploma poslana za ${name}!` });

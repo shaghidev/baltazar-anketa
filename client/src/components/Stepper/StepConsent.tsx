@@ -16,32 +16,23 @@ export default function StepConsent({ consent, setConsent, valid }: StepConsentP
           type="checkbox"
           checked={consent}
           onChange={e => setConsent(e.target.checked)}
-          id="consent"
-          className={`w-6 h-6 rounded border-2 border-gray-400
-            transition focus:outline-none focus:ring-4 focus:ring-offset-1
-            ${
-              valid
-                ? 'focus:ring-[#0057B7] border-[#0057B7]'
-                : 'focus:ring-red-400 border-red-500'
-            }`}
+          className={`w-5 h-5 rounded border-2 border-gray-400
+            transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-1
+            ${valid ? 'focus:ring-[#0057B7] border-[#0057B7]' : 'focus:ring-red-400 border-red-500'}`}
         />
-<span className="text-lg text-[#0057B7]">
-  Prihvaćam{' '}
-  <a
-    href="https://git.hr/opci-uvjeti-koristenja/?srsltid=AfmBOooH3u5SFZKr_-YQmafsSeyZCdPGnhrRAlU6m73zoEF8kYfnNPmW"
-    className="text-[#0057B7] underline"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    GDPR uvjete
-  </a>
-</span>
+        <span className="text-lg text-[#0057B7]">
+          Prihvaćam{' '}
+          <a
+            href="https://git.hr/opci-uvjeti-koristenja/?srsltid=AfmBOooH3u5SFZKr_-YQmafsSeyZCdPGnhrRAlU6m73zoEF8kYfnNPmW"
+            className="underline hover:text-blue-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GDPR uvjete
+          </a>
+        </span>
       </label>
-      {!valid && (
-        <p className="text-red-600 text-sm italic ml-9">
-          Prihvatite GDPR uvjete.
-        </p>
-      )}
+      {!valid && <p className="text-red-600 text-sm italic ml-8">Prihvatite GDPR uvjete.</p>}
     </div>
   )
 }

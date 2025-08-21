@@ -11,8 +11,6 @@ interface Props {
   setHelpingBehavior: React.Dispatch<React.SetStateAction<string>>
   inventionIdea: string
   setInventionIdea: React.Dispatch<React.SetStateAction<string>>
-
-  
 }
 
 export default function StepPersonalityQuestions({
@@ -24,8 +22,8 @@ export default function StepPersonalityQuestions({
   setHelpingBehavior,
   inventionIdea,
   setInventionIdea,
-
 }: Props) {
+
   const renderQuestion = (
     title: string,
     name: string,
@@ -33,24 +31,17 @@ export default function StepPersonalityQuestions({
     setValue: React.Dispatch<React.SetStateAction<string>>,
     options: { label: string; value: string }[]
   ) => (
-    <fieldset className="mb-12">
-      <legend className="text-2xl font-extrabold mb-6 text-[#0057B7] drop-shadow-md">
-        {title}
-      </legend>
-      <div className="grid gap-5 sm:grid-cols-2">
+    <fieldset className="mb-10">
+      <legend className="text-2xl font-extrabold mb-4 text-[#0057B7]">{title}</legend>
+      <div className="grid gap-4 sm:grid-cols-2">
         {options.map(({ label, value: optionValue }) => (
           <label
             key={optionValue}
-            className={`
-              flex items-center p-3 rounded-3xl border- cursor-pointer select-none
-              transition-all duration-300 ease-in-out
-              shadow-sm
-              ${
-                value === optionValue
-                  ? 'bg-yellow-100 border-yellow-400 scale-[1.01] shadow-lg'
-                  : 'bg-white border-gray-300 hover:border-yellow-400 hover:shadow-md hover:scale-[1.01]'
-              }
-            `}
+            className={`flex items-center p-4 rounded-2xl border cursor-pointer select-none transition-all
+                        duration-200 shadow-sm
+                        ${value === optionValue
+                          ? 'bg-yellow-100 border-yellow-400 shadow-lg scale-105'
+                          : 'bg-white border-gray-300 hover:border-yellow-400 hover:shadow-md hover:scale-105'}`}
           >
             <input
               type="radio"
@@ -60,7 +51,7 @@ export default function StepPersonalityQuestions({
               onChange={() => setValue(optionValue)}
               className="hidden"
             />
-            <span className="text-3px font-medium text-gray-800">{label}</span>
+            <span className="text-sm sm:text-base font-medium text-gray-800">{label}</span>
           </label>
         ))}
       </div>
@@ -68,9 +59,7 @@ export default function StepPersonalityQuestions({
   )
 
   return (
-    <div className="p-0 mx-auto">
-
-
+    <div className="max-w-[900px] mx-auto px-2 sm:px-4">
       {renderQuestion(
         '1. Što ti najviše voliš raditi u slobodno vrijeme?',
         'hobby',
@@ -83,7 +72,6 @@ export default function StepPersonalityQuestions({
           { label: 'Istraživati i postavljati pitanja o svijetu oko sebe', value: 'curiosity' },
         ]
       )}
-
       {renderQuestion(
         '2. Kako se osjećaš kad nešto ne znaš?',
         'reactionToNotKnowing',
@@ -96,9 +84,8 @@ export default function StepPersonalityQuestions({
           { label: 'Pitam mnogo pitanja kako bih zaključio odgovor', value: 'curiosity' },
         ]
       )}
-
       {renderQuestion(
-        '3. Kada prijatelj ima problem ili izazov i tužan je, što najčešće napraviš? ',
+        '3. Kada prijatelj ima problem ili izazov i tužan je, što najčešće napraviš?',
         'helpingBehavior',
         helpingBehavior,
         setHelpingBehavior,
@@ -109,7 +96,6 @@ export default function StepPersonalityQuestions({
           { label: 'Pitam zašto se to dogodilo i želim spriječiti da se ponovi', value: 'curiosity' },
         ]
       )}
-
       {renderQuestion(
         '4. Kad bi mogao/la izumiti nešto za Baltazargrad, što bi napravio/la?',
         'inventionIdea',

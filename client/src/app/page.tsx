@@ -14,6 +14,14 @@ import { PersonalityType } from '../components/hooks/scoring'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'react-use'
 
+// ⚡ Sigurna funkcija za escape HTML
+const escapeHTML = (str: string) =>
+  str.replace(/&/g, '&amp;')
+     .replace(/</g, '&lt;')
+     .replace(/>/g, '&gt;')
+     .replace(/"/g, '&quot;')
+     .replace(/'/g, '&#039;')
+
 export default function Home() {
   const baltazarImages = [
     "/images/baltazar-step1.png",
@@ -55,12 +63,8 @@ export default function Home() {
       case 2:
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && consent
       case 3:
-        return (
-          hobby !== '' &&
-          reactionToNotKnowing !== '' &&
-          helpingBehavior !== '' &&
-          inventionIdea !== ''
-        )
+        return hobby !== '' && reactionToNotKnowing !== '' &&
+               helpingBehavior !== '' && inventionIdea !== ''
       default:
         return true
     }
@@ -72,12 +76,7 @@ export default function Home() {
         alert('Molimo odgovorite na sva pitanja prije nego nastavite.')
         return
       }
-      const p = calculatePersonality({
-        hobby,
-        reactionToNotKnowing,
-        helpingBehavior,
-        inventionIdea,
-      })
+      const p = calculatePersonality({ hobby, reactionToNotKnowing, helpingBehavior, inventionIdea })
       setPersonality(p)
       setSubmitted(true)
       setShowWhatsApp(true)
@@ -92,36 +91,27 @@ export default function Home() {
   async function sendDataToBackend(data: { name: string; email: string; consent: boolean }) {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      
-    
-    
 
       if (!response.ok) {
-        const contentType = response.headers.get("content-type");
-        let errorMessage = `Greška ${response.status}`;
-        if (contentType?.includes("application/json")) {
-          const { error } = await response.json();
-          errorMessage = error || errorMessage;
+        const contentType = response.headers.get('content-type')
+        let errorMessage = `Greška ${response.status}`
+        if (contentType?.includes('application/json')) {
+          const { error } = await response.json()
+          errorMessage = error || errorMessage
         } else {
-          const text = await response.text();
-          if (text) errorMessage = text;
+          const text = await response.text()
+          if (text) errorMessage = text
         }
-        throw new Error(errorMessage);
+        throw new Error(errorMessage)
       }
-
       return await response.json()
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Greška:', error.message)
-        throw error
-      } else {
-        console.error('Nepoznata greška:', error)
-        throw new Error('Nepoznata greška')
-      }
+      if (error instanceof Error) throw error
+      throw new Error('Nepoznata greška')
     }
   }
 
@@ -136,58 +126,50 @@ export default function Home() {
       return
     }
 
-    const p = calculatePersonality({
-      hobby,
-      reactionToNotKnowing,
-      helpingBehavior,
-      inventionIdea,
-    })
-
+    const p = calculatePersonality({ hobby, reactionToNotKnowing, helpingBehavior, inventionIdea })
     setPersonality(p)
     setSubmitted(true)
     setShowWhatsApp(true)
+
+    // Generiraj PDF na clientu
     generatePDF(name, p.key)
 
     try {
-      const result = await sendDataToBackend({ name, email, consent })
+      const safeData = {
+        name: escapeHTML(name),
+        email: escapeHTML(email),
+        consent,
+      }
+      const result = await sendDataToBackend(safeData)
       console.log('Backend je odgovorio:', result)
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        alert('Došlo je do problema sa slanjem podataka: ' + error.message)
-      } else {
-        alert('Došlo je do neočekivane greške')
-      }
+      if (error instanceof Error) alert('Došlo je do problema sa slanjem podataka: ' + error.message)
+      else alert('Došlo je do neočekivane greške')
     }
   }
 
   return (
     <main className="flex items-center justify-center font-baltazar px-2 sm:px-6 py-8 min-h-screen w-full relative">
       {submitted && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={500}
-          style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }}
-        />
+        <Confetti width={width} height={height} recycle={false} numberOfPieces={500}
+                  style={{ zIndex: 999999, position: 'fixed', top: 20, left: 0 }} />
       )}
 
-      <div className="relative bg-[url('/images/background1.png')] bg-cover bg-center rounded-3xl shadow-xl w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px] p-4 sm:p-8 overflow-hidden z-10">
+      <div className="relative bg-[url('/images/background1.png')] bg-cover bg-center rounded-3xl shadow-xl
+                      w-full max-w-[95vw] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1200px] p-4 sm:p-8 overflow-hidden z-10">
         <div className="absolute inset-0 bg-yellow/40 rounded-3xl pointer-events-none" />
 
-        <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center text-[#0057B7] tracking-wide z-20">
-          {currentStep === 4
-            ? 'Tvoja supermoć iz Baltazargrada je '
-            : 'Koja je tvoja supermoć iz Baltazargrada?'}
+        <h1 className="relative text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-8 text-center
+                       text-[#0057B7] tracking-wide z-20">
+          {currentStep === 4 ? 'Tvoja supermoć iz Baltazargrada je ' :
+           'Koja je tvoja supermoć iz Baltazargrada?'}
         </h1>
 
         <div className="flex justify-center mb-3 z-20">
           <Image
             src={baltazarImages[currentStep - 1]}
             alt={`Profesor Baltazar - Step ${currentStep}`}
-            width={150}
-            height={150}
-            className="select-none"
+            width={150} height={150} className="select-none"
           />
         </div>
 
@@ -205,20 +187,19 @@ export default function Home() {
           </Step>
 
           <Step>
-            <StepEmail email={email} setEmail={setEmail} valid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)} />
-            <StepConsent consent={consent} setConsent={setConsent} valid={consent} />
-          </Step>
+  <div className="flex flex-col gap-6">
+    <StepEmail email={email} setEmail={setEmail} valid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)} />
+    <StepConsent consent={consent} setConsent={setConsent} valid={consent} />
+  </div>
+</Step>
+
 
           <Step>
             <StepPersonalityQuestions
-              hobby={hobby}
-              setHobby={setHobby}
-              reactionToNotKnowing={reactionToNotKnowing}
-              setReactionToNotKnowing={setReactionToNotKnowing}
-              helpingBehavior={helpingBehavior}
-              setHelpingBehavior={setHelpingBehavior}
-              inventionIdea={inventionIdea}
-              setInventionIdea={setInventionIdea}
+              hobby={hobby} setHobby={setHobby}
+              reactionToNotKnowing={reactionToNotKnowing} setReactionToNotKnowing={setReactionToNotKnowing}
+              helpingBehavior={helpingBehavior} setHelpingBehavior={setHelpingBehavior}
+              inventionIdea={inventionIdea} setInventionIdea={setInventionIdea}
             />
           </Step>
 
@@ -228,8 +209,7 @@ export default function Home() {
               submitted={submitted}
               name={name}
               showWhatsApp={showWhatsApp}
-                email={email}
-
+              email={email}
             />
           </Step>
         </Stepper>
