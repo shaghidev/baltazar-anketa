@@ -4,6 +4,8 @@ import path from 'path';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import nodemailer from 'nodemailer';
 import fontkit from '@pdf-lib/fontkit';
+import { createCanvas, loadImage } from 'canvas';
+import pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
 
 const router = express.Router();
 
@@ -15,70 +17,80 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Nedostaju obavezni podaci: name, email ili personalityKey' });
     }
 
-    // 1️⃣ Odabir template-a prema personalityKey
-    const templateMap = {
-      knowledge: 'knowledge.pdf',
-      creativity: 'creativity.pdf',
-      curiosity: 'curiosity.pdf',
-    };
+    const jsonPath = path.join(process.cwd(), 'config', 'personalities.json');
+    const personalityData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    const personality = personalityData.find(p => p.key === personalityKey);
+    if (!personality) return res.status(404).json({ error: 'Nepoznat personalityKey' });
 
-    const templateFile = templateMap[personalityKey] || 'knowledge.pdf';
-    const templatePath = path.join(process.cwd(), 'public', 'templates', templateFile);
-
-    if (!fs.existsSync(templatePath)) {
-      return res.status(404).json({ error: 'Template PDF ne postoji' });
-    }
-
+    const templatePath = path.join(process.cwd(), 'public', personality.template);
     const existingPdfBytes = fs.readFileSync(templatePath);
 
-    // 2️⃣ Učitaj PDF i embed font
+    
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
-    pdfDoc.registerFontkit(fontkit); // omogućava korištenje custom fontova ako treba
+    pdfDoc.registerFontkit(fontkit);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
-
-    // Standard font podržava hrvatske znakove
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // 3️⃣ Dodaj ime i datum
     const today = new Date();
     const formattedDate = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
-
     firstPage.drawText(name, { x: 150, y: 370, size: 36, font, color: rgb(0, 0, 0) });
     firstPage.drawText(formattedDate, { x: 40, y: 55, size: 16, font, color: rgb(0, 0, 0) });
 
     const pdfBytes = await pdfDoc.save();
+    const tmpPdfPath = path.join(process.cwd(), 'tmp', `temp-${name}.pdf`);
+    if (!fs.existsSync(path.dirname(tmpPdfPath))) fs.mkdirSync(path.dirname(tmpPdfPath));
+    fs.writeFileSync(tmpPdfPath, pdfBytes);
 
-    // 4️⃣ Pošalji email s PDF-om
+ 
+    const loadingTask = pdfjsLib.getDocument(tmpPdfPath);
+    const pdf = await loadingTask.promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2 });
+
+    const canvas = createCanvas(viewport.width, viewport.height);
+    const context = canvas.getContext('2d');
+
+    await page.render({ canvasContext: context, viewport }).promise;
+    const imageBase64 = canvas.toDataURL('image/png').split(',')[1]; // samo base64 dio
+
+    // 3️⃣ Pošalji email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: true, // true za port 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      secure: true,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
+
+    const safeName = name.replace(/[^a-z0-9]/gi, '_');
 
     await transporter.sendMail({
       from: `"Baltazar Kviz" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: "Tvoja diploma iz Baltazargrada",
-      text: `Hej ${name}, tvoja supermoć je ${personalityKey}!`,
-      html: `<p>Hej <b>${name}</b>, tvoja supermoć je <b>${personalityKey}</b>!</p>`,
+      subject: `Tvoja diploma iz Baltazargrada - ${personality.name}`,
+      text: `Hej ${name}, tvoja supermoć je ${personality.name}!\n\n${personality.description}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color:#333;">Hej ${name}!</h2>
+          <h3 style="color:#007acc;">Tvoja supermoć: ${personality.name}</h3>
+          <p style="font-size:16px; color:#555;">${personality.description}</p>
+          <p style="margin-top:20px;">Tvoja diploma je ispod:</p>
+          <img src="data:image/png;base64,${imageBase64}" style="width:100%; max-width:600px; border:1px solid #ccc;" />
+          <p style="margin-top:10px;">PDF možeš preuzeti <a href="cid:diploma">ovdje</a>.</p>
+        </div>
+      `,
       attachments: [
-        {
-          filename: `diploma-${name}.pdf`,
-          content: pdfBytes,
-          contentType: 'application/pdf',
-        },
+        { filename: `diploma-${safeName}.pdf`, content: pdfBytes, contentType: 'application/pdf', cid: 'diploma' }
       ],
     });
 
+    fs.unlinkSync(tmpPdfPath);
+    console.log(`Diploma poslana: ${name} (${email}) - ${personality.name}`);
     res.json({ success: true, message: `Diploma poslana za ${name}!` });
+
   } catch (err) {
     console.error("Greška pri slanju diplome:", err);
-    res.status(500).json({ error: "Neuspješno slanje diplome", details: err.message });
+    res.status(500).json({ error: "Neuspješno slanje diplome", details: err.message || err.toString() });
   }
 });
 
