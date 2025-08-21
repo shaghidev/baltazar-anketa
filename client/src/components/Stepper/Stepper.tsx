@@ -140,42 +140,45 @@ export default function Stepper({
           {Children.toArray(children)[currentStep - 1]}
         </StepContentWrapper>
   
-        {!isCompleted && (
-          <div className={`px-10 sm:px-20 pb-8 ${footerClassName}`}>
-            <div
-              className={`mt-10 flex ${
-                currentStep !== 1 ? "justify-between" : "justify-end"
-              }`}
-            >
-              {currentStep !== 1 && (
-                <button
-                  onClick={handleBack}
-                  className={`duration-350 rounded px-5 py-3 text-base font-medium transition ${
-                    currentStep === 1
-                      ? "pointer-events-none opacity-50 text-gray-400"
-                      : "text-[#0057B7] hover:text-[#003d7a]"
-                  }`}
-                  {...backButtonProps}
-                >
-                  {backButtonText}
-                </button>
-              )}
-              <button
-                onClick={isLastStep ? handleComplete : handleNext}
-                disabled={disableNext}
-                className={`duration-350 flex items-center justify-center rounded-full py-3 px-8 text-base font-medium tracking-tight text-white transition
-                  ${disableNext
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#0057B7] hover:bg-[#003d7a] active:bg-[#00264d]"
-                  }`}
-                {...nextButtonProps}
-              >
-                {isLastStep ? "Complete" : nextButtonText}
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Footer dugmad se ne prikazuju na zadnjem step-u */}
+{!isCompleted && !isLastStep && (
+  <div className={`px-10 sm:px-20 pb-8 ${footerClassName}`}>
+    <div
+      className={`mt-10 flex ${
+        currentStep !== 1 ? "justify-between" : "justify-end"
+      }`}
+    >
+      {currentStep !== 1 && (
+        <button
+          onClick={handleBack}
+          className={`duration-350 rounded px-5 py-3 text-base font-medium transition ${
+            currentStep === 1
+              ? "pointer-events-none opacity-50 text-gray-400"
+              : "text-[#0057B7] hover:text-[#003d7a]"
+          }`}
+          {...backButtonProps}
+        >
+          {backButtonText}
+        </button>
+      )}
+      <button
+        onClick={handleNext}
+        disabled={disableNext}
+        className={`duration-350 flex items-center justify-center rounded-full py-3 px-8 text-base font-medium tracking-tight text-white transition
+          ${disableNext
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-[#0057B7] hover:bg-[#003d7a] active:bg-[#00264d]"
+          }`}
+        {...nextButtonProps}
+      >
+        {nextButtonText}
+      </button>
+    </div>
+  </div>
+)}
+
       </div>
+      
     </div>
   );
   
@@ -251,7 +254,10 @@ function SlideTransition({
       style={{ position: "absolute", left: 0, right: 0, top: 0 }}
     >
       {children}
+      
     </motion.div>
+
+    
   );
 }
 

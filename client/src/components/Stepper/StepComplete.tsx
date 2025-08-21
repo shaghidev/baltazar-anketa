@@ -12,7 +12,6 @@ interface StepCompleteProps {
   email: string
 }
 
-
 export default function StepComplete({ personality, submitted, name, showWhatsApp, email }: StepCompleteProps) {
   const { generatePDF } = useGeneratePDF()
 
@@ -25,24 +24,22 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
   }
 
   const handleWhatsAppClick = async () => {
+    // Otvori WhatsApp odmah
+    window.open('https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N', '_blank');
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-diploma`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, personalityKey: personality.key })
-      })
-      
-      const data = await res.json()
-      console.log(data)
-  
-      window.open('https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N', '_blank')
-    } catch (err) {
-      console.error('Greška slanja diplome', err)
-    }
-  }
-  
-  
+      });
 
+      const data = await res.json();
+      console.log(data);
+    } catch (err) {
+      console.error('Greška slanja diplome', err);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center p-0 sm:p-8 max-w-full mx-auto relative rounded-xl">
@@ -58,9 +55,18 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
       {showWhatsApp && (
         <button
           onClick={handleWhatsAppClick}
-          className="mt-6 sm:mt-8 p-3 sm:p-4 bg-green-100 border border-green-400 rounded-lg text-green-800 font-semibold text-center w-full max-w-[320px] sm:max-w-sm text-sm sm:text-base hover:bg-green-200 transition"
+          className="
+            mt-6 sm:mt-8 
+            p-4 
+            bg-green-600 text-white font-bold 
+            rounded-xl shadow-lg
+            w-full max-w-[360px] sm:max-w-sm
+            text-base sm:text-lg 
+            hover:bg-green-700 hover:shadow-xl 
+            transition-all duration-200
+          "
         >
-          🎉 Preuzmi diplomu i pridruži se WhatsApp grupi!
+          Profesor Baltazar ti šalje diplomu! pridruži se susjedima 🧪
         </button>
       )}
     </div>
