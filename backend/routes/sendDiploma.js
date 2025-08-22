@@ -1,7 +1,7 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import nodemailer from 'nodemailer';
 import fontkit from '@pdf-lib/fontkit';
 
@@ -32,30 +32,40 @@ router.post('/', async (req, res) => {
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     pdfDoc.registerFontkit(fontkit);
     const firstPage = pdfDoc.getPages()[0];
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    // 👇 Učitaj custom OTF font
+    const fontPath = path.join(process.cwd(), 'fonts', 'ITC.otf'); // <-- zamijeni imenom svog fonta
+    if (!fs.existsSync(fontPath)) {
+      return res.status(500).json({ error: `Font datoteka ne postoji: ${fontPath}` });
+    }
+    const fontBytes = fs.readFileSync(fontPath);
+    const customFont = await pdfDoc.embedFont(fontBytes);
 
     const today = new Date();
     const formattedDate = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
-    const { width, height } = firstPage.getSize();
+    const { width } = firstPage.getSize();
 
-    const fontSize = 36
-    const textWidth = font.widthOfTextAtSize(name, fontSize)
+    const fontSize = 36;
+    const textWidth = customFont.widthOfTextAtSize(name, fontSize);
     const xCoordinate = (width - textWidth) / 2;
-		firstPage.drawText(name, {
-			x: xCoordinate,
-			y: 370,
-			size: fontSize,
-			font,
-			color: rgb(0, 0, 0),
-		});
-		firstPage.drawText(formattedDate, {
-			x: 40,
-			y: 55,
-			size: 16,
-			font,
-			color: rgb(0, 0, 0),
-		});
 
+    // 📝 Ispis imena u custom fontu
+    firstPage.drawText(name, {
+      x: xCoordinate,
+      y: 370,
+      size: fontSize,
+      font: customFont,
+      color: rgb(0, 0, 0),
+    });
+
+    // 📝 Ispis datuma u custom fontu
+    firstPage.drawText(formattedDate, {
+      x: 30,
+      y: 55,
+      size: 16,
+      font: customFont,
+      color: rgb(0, 0, 0),
+    });
 
     const pdfBytes = await pdfDoc.save();
 
@@ -98,8 +108,6 @@ router.post('/', async (req, res) => {
         }
       ],
     });
-    
-    
 
     console.log(`Diploma poslana: ${name} (${email}) - ${personality.name}`);
     res.json({ success: true, message: `Diploma poslana za ${name}!` });
