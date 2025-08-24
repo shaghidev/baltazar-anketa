@@ -1,43 +1,39 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import helmet from 'helmet';
 import cors from 'cors';
-import sendDiplomaRouter from './routes/sendDiploma.js';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import User from './models/User.js';
+
 dotenv.config();
 
 const app = express();
 
-// 🟢 Middleware
-app.use(express.json());
-app.use(helmet());
-app.use(cors({ origin: process.env.ALLOWED_ORIGIN || '*', credentials: true }));
+// 👇 prvo napravi app, pa tek onda trust proxy
+app.set("trust proxy", 1); // Render/Vercel/Heroku koriste proxyje
 
-// 🟢 Rate limiter
-const limiter = rateLimit({ windowMs: 15*60*1000, max: 100 });
-app.use(limiter);
+app.use(cors());
+app.use(bodyParser.json());
 
-// 🟢 MongoDB connect
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB error:', err));
+// Povezivanje na MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('✅ Spojeno na MongoDB'))
+  .catch(err => console.error('❌ Greška pri spajanju na MongoDB:', err));
 
-// 🟢 Routes
-app.use('/api/send-diploma', sendDiplomaRouter);
-
+// Ruta za spremanje korisnika
 app.post('/api/submit', async (req, res) => {
   const { name, email, consent } = req.body;
   try {
-    // Ovdje možeš spremiti podatke u MongoDB
-    res.json({ success: true, message: 'Podaci spremljeni!' });
+    const newUser = new User({ name, email, consent });
+    await newUser.save();
+    res.json({ success: true, message: 'Podaci spremljeni u bazu!' });
   } catch (err) {
-    res.status(500).json({ error: 'Greška na serveru' });
+    console.error('Greška:', err);
+    res.status(500).json({ error: 'Greška pri spremanju podataka' });
   }
 });
 
-// 🟢 Test
-app.get('/', (req, res) => res.send('API radi 🚀'));
-
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server radi na portu ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server radi na portu ${PORT}`));
