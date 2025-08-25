@@ -50,3 +50,28 @@ app.post('/api/submit', async (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`🚀 Server radi na portu ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server radi na portu ${PORT}`);
+
+  // ======================
+  // AUTO-PING BACKENDA
+  // ======================
+  const PING_INTERVAL = 14 * 60 * 1000; // 14 minuta
+  const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
+
+  // GET /api/ping rutu već možeš imati ili napraviti
+  app.get('/api/ping', (req, res) => res.json({ status: 'ok', time: new Date() }));
+
+  const pingServer = async () => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/ping`);
+      console.log('Ping poslan serveru, status:', res.status);
+    } catch (err) {
+      console.error('Greška pri pinganju servera:', err);
+    }
+  };
+
+  pingServer(); // odmah ping na startu
+  setInterval(pingServer, PING_INTERVAL);
+});
