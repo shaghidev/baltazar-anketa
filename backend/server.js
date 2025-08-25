@@ -15,19 +15,32 @@ const app = express();
 // ⚡ Povjerenje proxyju da se X-Forwarded-For koristi ispravno
 app.set("trust proxy", 1);
 
-app.use(cors());
+// ✅ CORS podrška za više allowed origin-a
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : [];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} nije dozvoljen`));
+    }
+  }
+}));
+
 app.use(bodyParser.json());
 
 // ✅ Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuta
   max: 100, // max 100 requesta po IP-u
-  standardHeaders: true, // vraća rate-limit info u Response headers
-  legacyHeaders: false,   // isključuje X-RateLimit-* header
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
-// Mongo connect
+// ✅ MongoDB connect
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Spojeno na MongoDB'))
   .catch(err => console.error('❌ Greška pri spajanju na MongoDB:', err));
@@ -48,20 +61,18 @@ app.post('/api/submit', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`🚀 Server radi na portu ${PORT}`));
+// 👇 Ping ruta za keepalive
+app.get('/api/ping', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Server radi na portu ${PORT}`);
 
   // ======================
   // AUTO-PING BACKENDA
   // ======================
-  const PING_INTERVAL = 14 * 60 * 1000; // 14 minuta
+  const PING_INTERVAL = 10 * 60 * 1000; // 14 minuta
   const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
-
-  // GET /api/ping rutu već možeš imati ili napraviti
-  app.get('/api/ping', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
   const pingServer = async () => {
     try {
