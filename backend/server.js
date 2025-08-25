@@ -57,9 +57,10 @@ app.post('/api/submit', async (req, res) => {
   try {
     const updatedUser = await User.findOneAndUpdate(
       { email }, // traži po emailu
-      { name, email, consent }, // podatci za update
-      { new: true, upsert: true } // kreiraj ako ne postoji
+      { $set: { name, email, consent } }, // koristi $set za update
+      { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true }
     );
+    
 
     res.json({ success: true, message: 'Podaci spremljeni/updated u bazi!', user: updatedUser });
   } catch (err) {
