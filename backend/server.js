@@ -50,17 +50,24 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/send-diploma', diplomaRouter);
 
 // 👇 Ruta za spremanje korisnika
+// 👇 Ruta za spremanje ili update korisnika
 app.post('/api/submit', async (req, res) => {
   const { name, email, consent } = req.body;
+
   try {
-    const newUser = new User({ name, email, consent });
-    await newUser.save();
-    res.json({ success: true, message: 'Podaci spremljeni u bazu!' });
+    const updatedUser = await User.findOneAndUpdate(
+      { email }, // traži po emailu
+      { name, email, consent }, // podatci za update
+      { new: true, upsert: true } // kreiraj ako ne postoji
+    );
+
+    res.json({ success: true, message: 'Podaci spremljeni/updated u bazi!', user: updatedUser });
   } catch (err) {
-    console.error('Greška:', err);
-    res.status(500).json({ error: 'Greška pri spremanju podataka' });
+    console.error('❌ Greška:', err);
+    res.status(500).json({ error: 'Greška pri spremanju ili updateu podataka' });
   }
 });
+
 
 // 👇 Ping ruta za keepalive
 app.get('/api/ping', (req, res) => res.json({ status: 'ok', time: new Date() }));
