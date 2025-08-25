@@ -26,7 +26,7 @@ export default function StepComplete({ personality, submitted, name, showWhatsAp
     window.open('https://chat.whatsapp.com/IO2CwQaesTK8VnV6yHl99N', '_blank');
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-diploma`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sendDiploma`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, personalityKey: personality.key })
