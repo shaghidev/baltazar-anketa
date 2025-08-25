@@ -3,26 +3,39 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import User from './models/User.js';
+import rateLimit from 'express-rate-limit';
+
+import diplomaRouter from './routes/sendDiploma.js'; 
+import User from './models/User.js'; 
 
 dotenv.config();
 
 const app = express();
 
-// 👇 prvo napravi app, pa tek onda trust proxy
-app.set("trust proxy", 1); // Render/Vercel/Heroku koriste proxyje
+// ⚡ Povjerenje proxyju da se X-Forwarded-For koristi ispravno
+app.set("trust proxy", 1);
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Povezivanje na MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('✅ Spojeno na MongoDB'))
+// ✅ Rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: 100, // max 100 requesta po IP-u
+  standardHeaders: true, // vraća rate-limit info u Response headers
+  legacyHeaders: false,   // isključuje X-RateLimit-* header
+});
+app.use(limiter);
+
+// Mongo connect
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Spojeno na MongoDB'))
   .catch(err => console.error('❌ Greška pri spajanju na MongoDB:', err));
 
-// Ruta za spremanje korisnika
+// ✅ Router za slanje diplome
+app.use('/api/send-diploma', diplomaRouter);
+
+// 👇 Ruta za spremanje korisnika
 app.post('/api/submit', async (req, res) => {
   const { name, email, consent } = req.body;
   try {

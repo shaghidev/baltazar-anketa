@@ -1,20 +1,27 @@
+// routes/sendDiploma.js
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { PDFDocument, rgb } from 'pdf-lib';
 import nodemailer from 'nodemailer';
 import fontkit from '@pdf-lib/fontkit';
+import User from '../models/User.js'; // 👈 model korisnika
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  const { name, email, personalityKey } = req.body;
+  const { name, email, personalityKey, consent = true } = req.body;
 
   try {
     if (!name || !email || !personalityKey) {
       return res.status(400).json({ error: 'Nedostaju obavezni podaci: name, email ili personalityKey' });
     }
 
+    // 1️⃣ Spremanje korisnika u MongoDB
+    const newUser = new User({ name, email, consent });
+    await newUser.save();
+
+    // 2️⃣ Učitaj personalities.json
     const jsonPath = path.join(process.cwd(), 'config', 'personalities.json');
     if (!fs.existsSync(jsonPath)) {
       return res.status(500).json({ error: 'Datoteka personalities.json ne postoji' });
@@ -24,7 +31,7 @@ router.post('/', async (req, res) => {
     const personality = personalityData.find(p => p.key === personalityKey);
     if (!personality) return res.status(404).json({ error: 'Nepoznat personalityKey' });
 
-    // 2️⃣ Učitaj template PDF i dodaj ime + datum
+    // 3️⃣ Učitaj PDF template
     const templatePath = path.join(process.cwd(), 'public', personality.template);
     if (!fs.existsSync(templatePath)) return res.status(404).json({ error: 'Template PDF ne postoji' });
 
@@ -33,43 +40,27 @@ router.post('/', async (req, res) => {
     pdfDoc.registerFontkit(fontkit);
     const firstPage = pdfDoc.getPages()[0];
 
-    // 👇 Učitaj custom OTF font
-    const fontPath = path.join(process.cwd(), 'fonts', 'ITC.otf'); // <-- zamijeni imenom svog fonta
-    if (!fs.existsSync(fontPath)) {
-      return res.status(500).json({ error: `Font datoteka ne postoji: ${fontPath}` });
-    }
+    // 4️⃣ Učitaj custom font
+    const fontPath = path.join(process.cwd(), 'fonts', 'ITC.otf');
+    if (!fs.existsSync(fontPath)) return res.status(500).json({ error: `Font datoteka ne postoji: ${fontPath}` });
+
     const fontBytes = fs.readFileSync(fontPath);
     const customFont = await pdfDoc.embedFont(fontBytes);
 
     const today = new Date();
     const formattedDate = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
     const { width } = firstPage.getSize();
-
     const fontSize = 36;
     const textWidth = customFont.widthOfTextAtSize(name, fontSize);
     const xCoordinate = (width - textWidth) / 2;
 
-    // 📝 Ispis imena u custom fontu
-    firstPage.drawText(name, {
-      x: xCoordinate,
-      y: 370,
-      size: fontSize,
-      font: customFont,
-      color: rgb(0, 0, 0),
-    });
-
-    // 📝 Ispis datuma u custom fontu
-    firstPage.drawText(formattedDate, {
-      x: 30,
-      y: 55,
-      size: 16,
-      font: customFont,
-      color: rgb(0, 0, 0),
-    });
+    // 5️⃣ Ispiši ime i datum u PDF
+    firstPage.drawText(name, { x: xCoordinate, y: 370, size: fontSize, font: customFont, color: rgb(0,0,0) });
+    firstPage.drawText(formattedDate, { x: 30, y: 55, size: 16, font: customFont, color: rgb(0,0,0) });
 
     const pdfBytes = await pdfDoc.save();
 
-    // 3️⃣ Pošalji email s PDF attachmentom
+    // 6️⃣ Pošalji email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '465'),
@@ -89,31 +80,25 @@ router.post('/', async (req, res) => {
           <h2 style="color:#333; text-align:center;">Čestitamo, ${name}!</h2>
           <h3 style="color:#007acc; text-align:center;">Tvoja supermoć: ${personality.name}</h3>
           <p style="font-size:16px; color:#555; line-height:1.5; text-align:center;">${personality.description}</p>
-    
           <div style="text-align:center; margin-top:30px;">
             <p style="font-weight:bold; color:#333;">Tvoja diploma je u privitku 📎</p>
             <p style="font-size:14px; color:#777;">Možeš ju preuzeti ili otvoriti kao PDF.</p>
           </div>
-    
           <footer style="text-align:center; margin-top:40px; font-size:12px; color:#aaa;">
             © ${new Date().getFullYear()} Baltazar Kviz
           </footer>
         </div>
       `,
       attachments: [
-        {
-          filename: `diploma-${safeName}.pdf`,
-          content: pdfBytes,
-          contentType: 'application/pdf',
-        }
+        { filename: `diploma-${safeName}.pdf`, content: pdfBytes, contentType: 'application/pdf' }
       ],
     });
 
-    console.log(`Diploma poslana: ${name} (${email}) - ${personality.name}`);
-    res.json({ success: true, message: `Diploma poslana za ${name}!` });
+    console.log(`✅ Podaci spremljeni i diploma poslana: ${name} (${email}) - ${personality.name}`);
+    res.json({ success: true, message: `Podaci spremljeni i diploma poslana za ${name}!` });
 
   } catch (err) {
-    console.error("Greška pri slanju diplome:", err);
+    console.error("❌ Greška pri slanju diplome:", err);
     res.status(500).json({ error: "Neuspješno slanje diplome", details: err.message || err.toString() });
   }
 });
