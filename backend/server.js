@@ -55,7 +55,7 @@ mongoose.connect(process.env.MONGO_URI)
 // ======================
 
 // Slanje diploma
-app.use('/api/send-diploma', diplomaRouter);
+app.use('/api/sendDiploma', diplomaRouter);
 
 // Dodavanje ili update korisnika
 app.post('/api/submit', async (req, res) => {
