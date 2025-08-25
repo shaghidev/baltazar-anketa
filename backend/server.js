@@ -15,15 +15,16 @@ const app = express();
 // ⚡ Povjerenje proxyju da se X-Forwarded-For koristi ispravno
 app.set("trust proxy", 1);
 
-// ✅ CORS podrška za više allowed origin-a
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',') 
-  : [];
+// ✅ CORS s jednom varijablom
+const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Ako nema origin (Postman, curl) ili je isti kao allowed
+    if (!origin || origin === allowedOrigin) {
       callback(null, true);
     } else {
+      console.warn(`Origin ${origin} nije dozvoljen`);
       callback(new Error(`Origin ${origin} nije dozvoljen`));
     }
   }
@@ -34,7 +35,7 @@ app.use(bodyParser.json());
 // ✅ Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuta
-  max: 100, // max 100 requesta po IP-u
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -71,7 +72,7 @@ app.listen(PORT, () => {
   // ======================
   // AUTO-PING BACKENDA
   // ======================
-  const PING_INTERVAL = 10 * 60 * 1000; // 14 minuta
+  const PING_INTERVAL = 14 * 60 * 1000; // 14 minuta
   const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
 
   const pingServer = async () => {
